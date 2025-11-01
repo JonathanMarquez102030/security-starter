@@ -3,6 +3,7 @@ package com.jonathanmarquez.security.security.controller;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquez.security.security.model.dto.AuthResponseDto;
 import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
+import com.jonathanmarquez.security.security.service.CustomUserDetailsService;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
@@ -25,6 +26,13 @@ import java.util.Map;
 
 /**
  * Controlador de autenticación con JWT + Cookies seguras.
+ *
+ * Flujo de autenticación:
+ * 1. Cliente envía credenciales vía Basic Auth a /api/auth/login
+ * 2. BasicAuthenticationFilter valida credenciales
+ * 3. JWTTokenGeneratorFilter genera tokens JWT
+ * 4. Tokens se almacenan en cookies seguras HttpOnly
+ * 5. Requests subsiguientes usan JWT desde cookies (validados por JWTTokenValidatorFilter)
  */
 @Slf4j
 @RestController
@@ -33,6 +41,7 @@ import java.util.Map;
 public class AuthController {
 
   private final UserProfileService userProfileService;
+  private final CustomUserDetailsService userDetailsService;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
 
@@ -42,6 +51,10 @@ public class AuthController {
    *
    * GET /api/auth/login
    * Headers: Authorization: Basic base64(username:password)
+   *
+   * Respuesta:
+   * - Cookies: accessToken, refreshToken (HttpOnly, Secure en prod, SameSite=Strict)
+   * - Body: Información del usuario autenticado
    */
   @GetMapping("/login")
   public ResponseEntity<?> login(Authentication authentication) {
@@ -70,6 +83,14 @@ public class AuthController {
   @PostMapping("/register")
   public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto request) {
     try {
+
+      if (userProfileService.userExists(request.username())) {
+        return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "El username ya está registrado"
+        ));
+      }
+
       var profile = userProfileService.createUser(
           request.username(),
           request.password(),
@@ -106,10 +127,21 @@ public class AuthController {
    * GET /api/auth/me
    */
   @GetMapping("/me")
-  public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal SecurityUserDetails user) {
-    if (user == null) {
+  public ResponseEntity<?> getCurrentUser(Authentication  authentication) {
+    if (authentication == null || !authentication.isAuthenticated()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                            .body(Map.of("success", false, "message", "No autenticado"));
+    }
+
+    SecurityUserDetails user;
+
+    if (authentication.getPrincipal() instanceof SecurityUserDetails) {
+      // Autenticación vía Basic Auth (login directo)
+      user = (SecurityUserDetails) authentication.getPrincipal();
+    } else {
+      // Autenticación vía JWT - cargar usuario completo
+      String username = authentication.getName();
+      user = (SecurityUserDetails) userDetailsService.loadUserByUsername(username);
     }
 
     AuthResponseDto response = buildAuthResponse(user);
@@ -143,7 +175,9 @@ public class AuthController {
       Authentication auth = new UsernamePasswordAuthenticationToken(
           username,
           null,
-          AuthorityUtils.commaSeparatedStringToAuthorityList(authorities)
+          AuthorityUtils.commaSeparatedStringToAuthorityList(
+              authorities != null && !authorities.equals("null") ? authorities : ""
+          )
       );
 
       // Generar nuevo access token

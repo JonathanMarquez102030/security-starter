@@ -68,11 +68,11 @@ public class DevSecurityConfig {
         .requestMatchers(
             "/api/auth/register",
             "/api/auth/csrf",
+            "/api/auth/refresh",
             "/api/auth/public/**",
-            "/api/auth/login",
             "/error"
         ).permitAll()
-        .requestMatchers("/api/auth/me", "/api/auth/refresh", "/api/auth/logout").authenticated()
+        .requestMatchers("/api/auth/login", "/api/auth/me",  "/api/auth/logout").authenticated()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
         .anyRequest().authenticated()

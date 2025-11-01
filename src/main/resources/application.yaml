@@ -9,9 +9,7 @@ spring:
 # Configuración de Seguridad
 # ===========================
 security:
-  user-details-service-type: custom
-  authorization-mode: authorities  # AUTHORITIES o GROUPS
-  enable-groups: false
+  authorization-mode: groups  # AUTHORITIES o GROUPS
 
 # ===========================
 # Configuración JWT
@@ -21,6 +19,6 @@ jwt:
     key: ${JWT_SECRET:your-very-secure-secret-key-min-256-bits-long-change-this-in-production}
   issuer: ${JWT_ISSUER:Security-Template-App}
   access:
-    expiration: ${JWT_ACCESS_EXPIRATION_MS:900000}    # 15 minutos
+    expiration: ${JWT_ACCESS_EXPIRATION_MS:20000}    # 15 minutos
   refresh:
     expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 días

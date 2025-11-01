@@ -3,11 +3,13 @@ package com.jonathanmarquez.security.security.utils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class CookieUtil {
 
   @Autowired
@@ -21,6 +23,7 @@ public class CookieUtil {
    */
   public void createAccessTokenCookie(HttpServletResponse response, String token) {
     int maxAge = Integer.parseInt(env.getProperty("jwt.access.expiration", "900000")) / 1000; // convertir a segundos
+    log.debug("Creando accessToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, ACCESS_TOKEN_COOKIE, token, maxAge);
   }
 
@@ -29,6 +32,7 @@ public class CookieUtil {
    */
   public void createRefreshTokenCookie(HttpServletResponse response, String token) {
     int maxAge = Integer.parseInt(env.getProperty("jwt.refresh.expiration", "604800000")) / 1000; // convertir a segundos
+    log.debug("Creando refreshToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, REFRESH_TOKEN_COOKIE, token, maxAge);
   }
 
@@ -43,6 +47,9 @@ public class CookieUtil {
     cookie.setMaxAge(maxAge);
     cookie.setAttribute("SameSite", "Strict"); // Protección CSRF adicional
     response.addCookie(cookie);
+
+    log.debug("Cookie '{}' creada - HttpOnly: true, Secure: {}, MaxAge: {}, SameSite: Strict",
+              name, isProductionMode(), maxAge);
   }
 
   /**

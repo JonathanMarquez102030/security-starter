@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JWTTokenValidatorFilter extends OncePerRequestFilter {
 
   private final JwtUtil jwtUtil;
@@ -30,16 +32,23 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
                                   @NonNull FilterChain filterChain)
       throws ServletException, IOException {
 
+    log.debug("JWTTokenValidatorFilter ejecutado para: {}", request.getServletPath());
+
+
     String jwt = null;
 
     // 1. Intentar obtener token desde cookie (prioridad)
     jwt = cookieUtil.getAccessTokenFromCookie(request);
+    if (jwt != null) {
+      log.debug("Access token encontrado en cookie");
+    }
 
     // 2. Si no hay en cookie, intentar desde header Authorization
     if (jwt == null) {
       String authHeader = request.getHeader("Authorization");
       if (authHeader != null && authHeader.startsWith("Bearer ")) {
         jwt = authHeader.substring(7);
+        log.debug("Access token encontrado en header Authorization");
       }
     }
 
@@ -50,6 +59,8 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
           String username = jwtUtil.extractUsername(jwt);
           String authorities = jwtUtil.extractAuthorities(jwt);
 
+          log.debug("JWT válido para usuario: {} con authorities: {}", username, authorities);
+
           List<GrantedAuthority> grantedAuthorities =
               AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
@@ -58,11 +69,15 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
 
           SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
+          log.warn("JWT inválido o expirado");
           throw new BadCredentialsException("Invalid or expired JWT Token");
         }
       } catch (Exception e) {
+        log.error("Error validando JWT: {}", e.getMessage());
         throw new BadCredentialsException("Invalid JWT Token: " + e.getMessage());
       }
+    }else{
+      log.debug("No se encontró JWT en cookies ni headers para: {}", request.getServletPath());
     }
 
     filterChain.doFilter(request, response);
@@ -89,6 +104,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
     String path = request.getServletPath();
     return path.equals("/api/auth/login") ||
         path.equals("/api/auth/register") ||
-        path.equals("/api/auth/refresh");
+        path.equals("/api/auth/refresh") ||
+        path.equals("/api/auth/csrf");
   }
 }

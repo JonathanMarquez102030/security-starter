@@ -23,4 +23,6 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
-    com.yourproject: DEBUG
+    com.jonathanmarquez.security: DEBUG
+    com.jonathanmarquez.security.security.filter: DEBUG
+    com.jonathanmarquez.security.security.utils: DEBUG

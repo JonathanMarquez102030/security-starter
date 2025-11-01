@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: security-template
+
+  profiles:
+    active: dev
+
+# ===========================
+# Configuración de Seguridad
+# ===========================
+security:
+  user-details-service-type: custom
+  authorization-mode: authorities  # AUTHORITIES o GROUPS
+  enable-groups: false
+
+# ===========================
+# Configuración JWT
+# ===========================
+jwt:
+  secret:
+    key: ${JWT_SECRET:your-very-secure-secret-key-min-256-bits-long-change-this-in-production}
+  issuer: ${JWT_ISSUER:Security-Template-App}
+  access:
+    expiration: ${JWT_ACCESS_EXPIRATION_MS:900000}    # 15 minutos
+  refresh:
+    expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 días

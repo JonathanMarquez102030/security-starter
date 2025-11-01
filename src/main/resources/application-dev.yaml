@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/dbsecuritytemplate
+    username: securityuser
+    password: mysecretpassword
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/security/01-security-schema.sql
+      data-locations: classpath:db/security/02-security-data.sql
+      continue-on-error: false
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.yourproject: DEBUG

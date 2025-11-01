@@ -45,6 +45,7 @@ public class DevSecurityConfig {
 
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
+  private final UserDetailsService userDetailsService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,7 +60,7 @@ public class DevSecurityConfig {
     configureCsrf(http);
 
     // 4. Filtros JWT personalizados
-    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
+    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService), BasicAuthenticationFilter.class);
     http.addFilterAfter(new JWTTokenGeneratorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
     http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 

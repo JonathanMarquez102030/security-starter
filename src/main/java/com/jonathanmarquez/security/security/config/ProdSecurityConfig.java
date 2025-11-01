@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -41,6 +42,7 @@ public class ProdSecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
+  private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -51,7 +53,7 @@ public class ProdSecurityConfig {
 
         configureCsrf(http);
 
-        http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
+        http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService), BasicAuthenticationFilter.class);
         http.addFilterAfter(new JWTTokenGeneratorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
         http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 

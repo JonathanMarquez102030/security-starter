@@ -68,7 +68,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
       // Consulta para obtener autoridades desde grupos
       String groupSql = """
-              SELECT ga.authority 
+              SELECT ga.authority
               FROM group_authorities ga
               INNER JOIN group_members gm ON ga.group_id = gm.group_id
               WHERE gm.username = ?

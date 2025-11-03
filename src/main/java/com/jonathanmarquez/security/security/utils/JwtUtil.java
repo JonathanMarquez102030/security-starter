@@ -3,6 +3,7 @@ package com.jonathanmarquez.security.security.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
@@ -15,10 +16,11 @@ import java.util.Date;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Component
 public class JwtUtil {
 
-  @Autowired
+
   private Environment env;
 
   private SecretKey getSigningKey() {

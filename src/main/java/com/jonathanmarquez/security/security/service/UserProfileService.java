@@ -67,6 +67,7 @@ public class UserProfileService {
     return userProfileRepository.save(profile);
   }
 
+  //TODO: Implementar con mejor seguridad, con validación de correo electrónico. y con buenas practicas de seguridad.
   /**
    * Actualiza la contraseña del usuario.
    */
@@ -79,6 +80,7 @@ public class UserProfileService {
     );
   }
 
+  //TODO: Implementar cuando este mas estandarizado y con buenas practicas de seguridad para confirmar.
   /**
    * Elimina completamente un usuario (con cascada a perfil y authorities).
    */
@@ -91,6 +93,7 @@ public class UserProfileService {
     jdbcTemplate.update("DELETE FROM users WHERE username = ?", username);
   }
 
+  //TODO: implementar para desactivación o activación de usuarios, verificar usos practicos.
   /**
    * Habilita o deshabilita un usuario.
    */

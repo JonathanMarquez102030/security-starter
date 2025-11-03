@@ -62,21 +62,6 @@ public class SecurityUserDetails implements UserDetails {
         return enabled;
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
     // Métodos de conveniencia para acceder al perfil
     public String getEmail() {
         return profile != null ? profile.getEmail() : null;

@@ -66,7 +66,8 @@ public class DevSecurityConfig {
             "/api/auth/csrf",
             "/api/auth/refresh",
             "/api/auth/public/**",
-            "/error"
+            "/error",
+            "/api/test/**"
         ).permitAll()
         .requestMatchers("/api/auth/login", "/api/auth/me",  "/api/auth/logout").authenticated()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")

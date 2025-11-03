@@ -5,15 +5,10 @@ import com.jonathanmarquez.security.security.filter.JWTTokenGeneratorFilter;
 import com.jonathanmarquez.security.security.filter.JWTTokenValidatorFilter;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -80,8 +75,7 @@ public class DevSecurityConfig {
     );
 
     // 6. HTTP Basic (solo para login inicial)
-    http.httpBasic(basic -> {
-    });
+    http.httpBasic(basic -> {});
 
     // 7. Deshabilitar form login
     http.formLogin(AbstractHttpConfigurer::disable);
@@ -113,34 +107,20 @@ public class DevSecurityConfig {
   }
 
   private CorsConfigurationSource corsConfigurationSource() {
-    return new CorsConfigurationSource() {
-      @Override
-      public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
-        config.setAllowedMethods(Collections.singletonList("*"));
-        config.setAllowCredentials(true);
-        config.setAllowedHeaders(Collections.singletonList("*"));
-        config.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
-        config.setMaxAge(3600L);
-        return config;
-      }
+    return request -> {
+      CorsConfiguration config = new CorsConfiguration();
+      config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
+      config.setAllowedMethods(Collections.singletonList("*"));
+      config.setAllowCredentials(true);
+      config.setAllowedHeaders(Collections.singletonList("*"));
+      config.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
+      config.setMaxAge(3600L);
+      return config;
     };
   }
 
   @Bean
   public PasswordEncoder passwordEncoder() {
     return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
-    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService);
-    provider.setPasswordEncoder(passwordEncoder);
-
-    ProviderManager providerManager = new ProviderManager(provider);
-    providerManager.setEraseCredentialsAfterAuthentication(false);
-    return providerManager;
   }
 }

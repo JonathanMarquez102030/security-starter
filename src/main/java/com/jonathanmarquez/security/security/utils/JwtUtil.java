@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 public class JwtUtil {
 
 
-  private Environment env;
+  private final Environment env;
 
   private SecretKey getSigningKey() {
     String secret = env.getProperty("jwt.secret.key", "default_secret_min_length_256bits");

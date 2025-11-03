@@ -5,12 +5,10 @@ import com.jonathanmarquez.security.security.filter.JWTTokenGeneratorFilter;
 import com.jonathanmarquez.security.security.filter.JWTTokenValidatorFilter;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.lang.NonNull;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -58,8 +56,14 @@ public class ProdSecurityConfig {
         http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
         http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/register", "/api/auth/csrf", "/error").permitAll()
-            .requestMatchers("/api/auth/login", "/api/auth/me", "/api/auth/refresh", "/api/auth/logout").authenticated()
+            .requestMatchers(
+                "/api/auth/register",
+                "/api/auth/csrf",
+                "/api/auth/refresh",
+                "/api/auth/public/**",
+                "/error"
+            ).permitAll()
+            .requestMatchers("/api/auth/login", "/api/auth/me", "/api/auth/logout").authenticated()
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
             .anyRequest().authenticated()
@@ -95,18 +99,15 @@ public class ProdSecurityConfig {
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
-        return new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(@NonNull HttpServletRequest request) {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(Collections.singletonList("https://yourapp.com"));
-                config.setAllowedMethods(Collections.singletonList("*"));
-                config.setAllowCredentials(true);
-                config.setAllowedHeaders(Collections.singletonList("*"));
-                config.setExposedHeaders(List.of("Authorization"));
-                config.setMaxAge(3600L);
-                return config;
-            }
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOrigins(Collections.singletonList("https://yourapp.com"));
+            config.setAllowedMethods(Collections.singletonList("*"));
+            config.setAllowCredentials(true);
+            config.setAllowedHeaders(Collections.singletonList("*"));
+            config.setExposedHeaders(List.of("Authorization"));
+            config.setMaxAge(3600L);
+            return config;
         };
     }
 
@@ -114,5 +115,4 @@ public class ProdSecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 }

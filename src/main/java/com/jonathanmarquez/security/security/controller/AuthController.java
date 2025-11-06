@@ -1,8 +1,15 @@
 package com.jonathanmarquez.security.security.controller;
 
+import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
+import com.jonathanmarquez.security.exceptions.customexceptions.InvalidRefreshTokenException;
+import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
+import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
+import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.model.dto.AuthResponseDto;
 import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
+import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
+import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.service.CustomUserDetailsService;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
@@ -16,22 +23,33 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Controlador de autenticación con JWT + Cookies seguras.
+ * Controlador REST para la gestión de autenticación y autorización de usuarios.
  *
- * Flujo de autenticación:
- * 1. Cliente envía credenciales vía Basic Auth a /api/auth/login
- * 2. BasicAuthenticationFilter valida credenciales
- * 3. JWTTokenGeneratorFilter genera tokens JWT
- * 4. Tokens se almacenan en cookies seguras HttpOnly
- * 5. Requests subsiguientes usan JWT desde cookies (validados por JWTTokenValidatorFilter)
+ * <p>Este controlador implementa un sistema de autenticación basado en JWT (JSON Web Tokens)
+ * con almacenamiento seguro en cookies HttpOnly. Proporciona endpoints para login, registro,
+ * renovación de tokens, obtención del usuario actual y logout.</p>
+ *
+ * <p>Flujo de autenticación:</p>
+ * <ol>
+ *   <li>Cliente envía credenciales vía Basic Auth a /api/auth/login</li>
+ *   <li>BasicAuthenticationFilter valida las credenciales</li>
+ *   <li>JWTTokenGeneratorFilter genera tokens JWT (access y refresh)</li>
+ *   <li>Tokens se almacenan en cookies seguras HttpOnly</li>
+ *   <li>Requests subsiguientes usan JWT desde cookies (validados por JWTTokenValidatorFilter)</li>
+ * </ol>
+ *
+ * @author Jonathan Marquez
+ * @version 1.0
+ * @since 2025
  */
 @Slf4j
 @RestController
@@ -43,200 +61,275 @@ public class AuthController {
   private final CustomUserDetailsService userDetailsService;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
+  private final UserProfileMapper userProfileMapper;
 
   /**
-   * Login: Spring Security maneja autenticación via BasicAuthenticationFilter.
-   * JWTTokenGeneratorFilter genera los tokens automáticamente.
+   * Autentica a un usuario mediante credenciales Basic Auth.
    *
-   * GET /api/auth/login
-   * Headers: Authorization: Basic base64(username:password)
+   * <p>Spring Security maneja la autenticación a través del BasicAuthenticationFilter.
+   * El JWTTokenGeneratorFilter genera automáticamente los tokens JWT que se almacenan
+   * en cookies HttpOnly y Secure (en producción) con política SameSite=Strict.</p>
    *
-   * Respuesta:
-   * - Cookies: accessToken, refreshToken (HttpOnly, Secure en prod, SameSite=Strict)
-   * - Body: Información del usuario autenticado
+   * <p>Las cookies generadas son:</p>
+   * <ul>
+   *   <li>accessToken: Token de corta duración para acceso a recursos</li>
+   *   <li>refreshToken: Token de larga duración para renovación</li>
+   * </ul>
+   *
+   * @param authentication objeto de autenticación proporcionado por Spring Security
+   * @param request        solicitud HTTP para obtener información de contexto
+   * @return ResponseEntity con datos del usuario autenticado en formato estandarizado
+   * @throws UserNotAuthenticatedException si el usuario no está autenticado
    */
   @GetMapping("/login")
-  public ResponseEntity<?> login(Authentication authentication) {
+  public ResponseEntity<SuccessApiResponse<AuthResponseDto>> login(
+      Authentication authentication,
+      HttpServletRequest request) {
 
     if (authentication == null || !authentication.isAuthenticated()) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("success", false, "message", "No autenticado"));
+      throw new UserNotAuthenticatedException();
     }
 
     SecurityUserDetails user = (SecurityUserDetails) authentication.getPrincipal();
-    log.info("Login exitoso: {}", user.getUsername());
+    log.info("Login exitoso para usuario: {}", user.getUsername());
 
-    AuthResponseDto response = buildAuthResponse(user);
+    AuthResponseDto authData = buildAuthResponse(user);
 
-    return ResponseEntity.ok(Map.of(
-        "success", true,
-        "message", "Login exitoso",
-        "data", response
-    ));
+    SuccessApiResponse<AuthResponseDto> response =
+        SuccessApiResponse.<AuthResponseDto>builder()
+                          .success(true)
+                          .message("Login exitoso")
+                          .status(HttpStatus.OK.getReasonPhrase())
+                          .statusCode(HttpStatus.OK.value())
+                          .timestamp(LocalDateTime.now())
+                          .path(request.getRequestURI())
+                          .data(authData)
+                          .build();
+
+    return ResponseEntity.ok(response);
   }
 
   /**
-   * Registro de nuevos usuarios.
-   * POST /api/auth/register
+   * Registra un nuevo usuario en el sistema.
+   *
+   * <p>Valida que el username no esté duplicado, crea el usuario con la contraseña
+   * encriptada y asigna el rol ROLE_USER por defecto. Adicionalmente, registra
+   * información de perfil como nombre, apellido y teléfono.</p>
+   *
+   * @param registerRequest datos de registro del nuevo usuario validados
+   * @param request         solicitud HTTP para obtener información de contexto
+   * @return ResponseEntity con datos del usuario registrado en formato estandarizado
+   * @throws EmailAddressAlreadyExistsException si el username ya existe en el sistema
    */
   @PostMapping("/register")
-  public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto request) {
-    try {
+  public ResponseEntity<SuccessApiResponse<UserProfileDto>> register(
+      @Valid @RequestBody RegisterRequestDto registerRequest,
+      HttpServletRequest request) {
 
-      if (userProfileService.userExists(request.username())) {
-        return ResponseEntity.badRequest().body(Map.of(
-            "success", false,
-            "message", "El username ya está registrado"
-        ));
-      }
-
-      var profile = userProfileService.createUser(
-          request.username(),
-          request.password(),
-          request.email(),
-          List.of("ROLE_USER")
+    if (userProfileService.userExists(registerRequest.email())) {
+      throw new EmailAddressAlreadyExistsException(
+          "El correo '" + registerRequest.email() + "' ya está registrado"
       );
-
-      profile.setFirstName(request.firstName());
-      profile.setLastName(request.lastName());
-      profile.setPhone(request.phone());
-      userProfileService.updateProfile(profile);
-
-      log.info("Usuario registrado: {}", request.username());
-
-      return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-          "success", true,
-          "message", "Usuario registrado exitosamente",
-          "data", Map.of(
-              "username", profile.getUsername(),
-              "email", profile.getEmail()
-          )
-      ));
-    } catch (Exception e) {
-      log.error("Error en registro: {}", e.getMessage());
-      return ResponseEntity.badRequest().body(Map.of(
-          "success", false,
-          "message", "Error al registrar: " + e.getMessage()
-      ));
     }
+
+    UserProfile profile = userProfileService.createUser(
+        registerRequest.email(),
+        registerRequest.password(),
+        List.of("ROLE_USER")
+    );
+
+    profile.setFirstName(registerRequest.firstName());
+    profile.setLastName(registerRequest.lastName());
+    profile.setPhone(registerRequest.phone());
+    profile.setDateOfBirth(registerRequest.dateOfBirth());
+
+    UserProfileDto userProfileDto = userProfileMapper.toUserProfileDto(userProfileService.updateProfile(profile));
+
+    log.info("Usuario registrado exitosamente: {}", registerRequest.email());
+
+    SuccessApiResponse<UserProfileDto> response =
+        SuccessApiResponse.<UserProfileDto>builder()
+                          .success(true)
+                          .message("Usuario registrado exitosamente")
+                          .status(HttpStatus.CREATED.getReasonPhrase())
+                          .statusCode(HttpStatus.CREATED.value())
+                          .timestamp(LocalDateTime.now())
+                          .path(request.getRequestURI())
+                          .data(userProfileDto)
+                          .build();
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   /**
-   * Obtener usuario autenticado actual.
-   * GET /api/auth/me
+   * Obtiene información del usuario actualmente autenticado.
+   *
+   * <p>Recupera los datos del usuario desde el contexto de seguridad. Si la autenticación
+   * es vía JWT, carga los datos completos del usuario desde la base de datos. Si es vía
+   * Basic Auth, utiliza los datos ya cargados en el objeto principal.</p>
+   *
+   * @param authentication objeto de autenticación del usuario actual
+   * @param request        solicitud HTTP para obtener información de contexto
+   * @return ResponseEntity con datos completos del usuario en formato estandarizado
+   * @throws UserNotAuthenticatedException si el usuario no está autenticado
    */
   @GetMapping("/me")
-  public ResponseEntity<?> getCurrentUser(Authentication  authentication) {
+  public ResponseEntity<SuccessApiResponse<AuthResponseDto>> getCurrentUser(
+      Authentication authentication,
+      HttpServletRequest request) {
+
     if (authentication == null || !authentication.isAuthenticated()) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("success", false, "message", "No autenticado"));
+      throw new UserNotAuthenticatedException();
     }
 
     SecurityUserDetails user;
 
     if (authentication.getPrincipal() instanceof SecurityUserDetails) {
-      // Autenticación vía Basic Auth (login directo)
       user = (SecurityUserDetails) authentication.getPrincipal();
     } else {
-      // Autenticación vía JWT - cargar usuario completo
       String username = authentication.getName();
       user = (SecurityUserDetails) userDetailsService.loadUserByUsername(username);
     }
 
-    AuthResponseDto response = buildAuthResponse(user);
+    AuthResponseDto authData = buildAuthResponse(user);
 
-    return ResponseEntity.ok(Map.of(
-        "success", true,
-        "data", response
-    ));
+    SuccessApiResponse<AuthResponseDto> response =
+        SuccessApiResponse.<AuthResponseDto>builder()
+                          .success(true)
+                          .message("Usuario obtenido exitosamente")
+                          .status(HttpStatus.OK.getReasonPhrase())
+                          .statusCode(HttpStatus.OK.value())
+                          .timestamp(LocalDateTime.now())
+                          .path(request.getRequestURI())
+                          .data(authData)
+                          .build();
+
+    return ResponseEntity.ok(response);
   }
 
   /**
-   * Refresh token: renueva el access token usando el refresh token.
-   * POST /api/auth/refresh
+   * Renueva el access token utilizando el refresh token.
+   *
+   * <p>Extrae el refresh token de las cookies, valida su autenticidad y vigencia,
+   * y genera un nuevo access token con los mismos privilegios. El nuevo token se
+   * almacena en una cookie HttpOnly reemplazando el anterior.</p>
+   *
+   * @param request  solicitud HTTP que contiene el refresh token en cookies
+   * @param response respuesta HTTP donde se establecerá la nueva cookie
+   * @return ResponseEntity con confirmación de renovación en formato estandarizado
+   * @throws InvalidRefreshTokenException si el refresh token es inválido o ha expirado
    */
   @PostMapping("/refresh")
-  public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-    try {
-      // Obtener refresh token desde cookie
-      String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
+  public ResponseEntity<SuccessApiResponse<Void>> refreshToken(
+      HttpServletRequest request,
+      HttpServletResponse response) {
 
-      if (refreshToken == null || !jwtUtil.isRefreshTokenValid(refreshToken)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(Map.of("success", false, "message", "Refresh token inválido o expirado"));
-      }
+    String refreshToken = cookieUtil.getRefreshTokenFromCookie(request);
 
-      // Extraer username y generar nuevo access token
-      String username = jwtUtil.extractUsername(refreshToken);
-      String authorities = jwtUtil.extractAuthorities(refreshToken);
-
-      // Crear autenticación temporal
-      Authentication auth = new UsernamePasswordAuthenticationToken(
-          username,
-          null,
-          AuthorityUtils.commaSeparatedStringToAuthorityList(
-              authorities != null && !authorities.equals("null") ? authorities : ""
-          )
-      );
-
-      // Generar nuevo access token
-      String newAccessToken = jwtUtil.generateAccessToken(auth);
-      cookieUtil.createAccessTokenCookie(response, newAccessToken);
-
-      log.info("Token renovado para: {}", username);
-
-      return ResponseEntity.ok(Map.of(
-          "success", true,
-          "message", "Token renovado exitosamente"
-      ));
-
-    } catch (Exception e) {
-      log.error("Error al renovar token: {}", e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                           .body(Map.of("success", false, "message", "Error al renovar token"));
+    if (refreshToken == null || !jwtUtil.isRefreshTokenValid(refreshToken)) {
+      throw new InvalidRefreshTokenException();
     }
+
+    String username = jwtUtil.extractUsername(refreshToken);
+    String authorities = jwtUtil.extractAuthorities(refreshToken);
+
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        username,
+        null,
+        AuthorityUtils.commaSeparatedStringToAuthorityList(
+            authorities != null && !authorities.equals("null") ? authorities : ""
+        )
+    );
+
+    String newAccessToken = jwtUtil.generateAccessToken(auth);
+    cookieUtil.createAccessTokenCookie(response, newAccessToken);
+
+    log.info("Token renovado exitosamente para usuario: {}", username);
+
+    SuccessApiResponse<Void> apiResponse =
+        SuccessApiResponse.<Void>builder()
+                          .success(true)
+                          .message("Token renovado exitosamente")
+                          .status(HttpStatus.OK.getReasonPhrase())
+                          .statusCode(HttpStatus.OK.value())
+                          .timestamp(LocalDateTime.now())
+                          .path(request.getRequestURI())
+                          .build();
+
+    return ResponseEntity.ok(apiResponse);
   }
 
   /**
-   * Logout: elimina cookies y limpia contexto.
-   * POST /api/auth/logout
+   * Cierra la sesión del usuario actual.
+   *
+   * <p>Elimina las cookies que contienen los tokens JWT (accessToken y refreshToken)
+   * y limpia el contexto de seguridad de Spring Security. Esto invalida la sesión
+   * del usuario en el cliente.</p>
+   *
+   * @param request  solicitud HTTP para obtener información de contexto
+   * @param response respuesta HTTP donde se eliminarán las cookies
+   * @return ResponseEntity con confirmación de logout en formato estandarizado
    */
   @PostMapping("/logout")
-  public ResponseEntity<?> logout(HttpServletResponse response) {
+  public ResponseEntity<SuccessApiResponse<Void>> logout(
+      HttpServletRequest request,
+      HttpServletResponse response) {
+
     cookieUtil.deleteTokenCookies(response);
     SecurityContextHolder.clearContext();
 
-    log.info("Logout exitoso");
+    log.info("Logout ejecutado exitosamente");
 
-    return ResponseEntity.ok(Map.of(
-        "success", true,
-        "message", "Logout exitoso"
-    ));
+    SuccessApiResponse<Void> apiResponse =
+        SuccessApiResponse.<Void>builder()
+                          .success(true)
+                          .message("Logout exitoso")
+                          .status(HttpStatus.OK.getReasonPhrase())
+                          .statusCode(HttpStatus.OK.value())
+                          .timestamp(LocalDateTime.now())
+                          .path(request.getRequestURI())
+                          .build();
+
+    return ResponseEntity.ok(apiResponse);
   }
 
   /**
-   * Endpoint para obtener CSRF token.
-   * GET /api/auth/csrf
+   * Endpoint para obtener el token CSRF.
+   *
+   * <p>Este endpoint permite a los clientes obtener el token CSRF necesario para
+   * realizar operaciones que modifiquen estado. El token es generado y manejado
+   * automáticamente por Spring Security.</p>
+   *
+   * @return ResponseEntity vacío con código 200 OK
    */
   @GetMapping("/csrf")
   public ResponseEntity<Void> getCsrfToken() {
     return ResponseEntity.ok().build();
   }
 
-  // ===========================
+  // ===================================================================================================================
   // Métodos Auxiliares
-  // ===========================
+  // ===================================================================================================================
 
+  /**
+   * Construye el objeto de respuesta de autenticación con los datos del usuario.
+   *
+   * <p>Extrae la información relevante del usuario autenticado incluyendo datos
+   * de perfil, autoridades y estado de habilitación para construir un DTO
+   * estandarizado de respuesta.</p>
+   *
+   * @param user detalles del usuario autenticado
+   * @return AuthResponseDto con la información del usuario estructurada
+   */
   private AuthResponseDto buildAuthResponse(SecurityUserDetails user) {
     return AuthResponseDto.builder()
-                          .username(user.getUsername())
                           .email(user.getEmail())
                           .firstName(user.getProfile() != null ? user.getProfile().getFirstName() : null)
                           .lastName(user.getProfile() != null ? user.getProfile().getLastName() : null)
                           .fullName(user.getFullName())
                           .phone(user.getProfile() != null ? user.getProfile().getPhone() : null)
                           .authorities(user.getAuthorities().stream()
-                                           .map(auth -> auth.getAuthority())
+                                           .map(GrantedAuthority::getAuthority)
                                            .toList())
                           .enabled(user.isEnabled())
                           .build();

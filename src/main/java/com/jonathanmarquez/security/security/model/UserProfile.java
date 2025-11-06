@@ -23,18 +23,16 @@ import java.time.LocalDateTime;
 @Builder
 public class UserProfile {
 
-    @Id
-    @Column(name = "username", length = 50, nullable = false)
-    private String username;  // FK a users.username (NO @ManyToOne)
+  @Id
+  @Column(name = "email", length = 255, nullable = false, unique = true)
+  private String email; // FK a users.username (NO @ManyToOne)
 
-    @Column(name = "first_name", length = 100)
+  @Column(name = "first_name", length = 100)
     private String firstName;
 
-    @Column(name = "last_name", length = 100)
+  @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(name = "email", length = 255, nullable = false, unique = true)
-    private String email;
 
     @Column(name = "phone", length = 20)
     private String phone;
@@ -52,7 +50,4 @@ public class UserProfile {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    // NO incluimos @ManyToOne a User para mantener las tablas separadas
-    // Solo usamos username como String
 }

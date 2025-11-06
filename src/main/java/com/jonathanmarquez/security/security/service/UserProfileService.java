@@ -27,33 +27,31 @@ public class UserProfileService {
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
    *
-   * @param username username único
-   * @param rawPassword contraseña en texto plano (se encodificará)
    * @param email email del usuario
+   * @param rawPassword contraseña en texto plano (se encodificará)
    * @param authorities lista de authorities a asignar (ej: ["ROLE_USER"])
    * @return el perfil creado
    */
   @Transactional
-  public UserProfile createUser(String username, String rawPassword, String email, List<String> authorities) {
+  public UserProfile createUser(String email, String rawPassword, List<String> authorities) {
 
     // 1. Crear usuario en tabla 'users' de Spring Security
     String encodedPassword = passwordEncoder.encode(rawPassword);
     jdbcTemplate.update(
         "INSERT INTO users (username, password, enabled) VALUES (?, ?, ?)",
-        username, encodedPassword, true
+        email, encodedPassword, true
     );
 
     // 2. Asignar authorities
     for (String authority : authorities) {
       jdbcTemplate.update(
           "INSERT INTO authorities (username, authority) VALUES (?, ?)",
-          username, authority
+          email, authority
       );
     }
 
     // 3. Crear perfil extendido
     UserProfile profile = UserProfile.builder()
-                                     .username(username)
                                      .email(email)
                                      .build();
 
@@ -72,11 +70,11 @@ public class UserProfileService {
    * Actualiza la contraseña del usuario.
    */
   @Transactional
-  public void updatePassword(String username, String newRawPassword) {
+  public void updatePassword(String email, String newRawPassword) {
     String encodedPassword = passwordEncoder.encode(newRawPassword);
     jdbcTemplate.update(
         "UPDATE users SET password = ? WHERE username = ?",
-        encodedPassword, username
+        encodedPassword, email
     );
   }
 
@@ -85,12 +83,12 @@ public class UserProfileService {
    * Elimina completamente un usuario (con cascada a perfil y authorities).
    */
   @Transactional
-  public void deleteUser(String username) {
+  public void deleteUser(String email) {
     // 1. Eliminar authorities
-    jdbcTemplate.update("DELETE FROM authorities WHERE username = ?", username);
+    jdbcTemplate.update("DELETE FROM authorities WHERE username = ?", email);
 
     // 2. Eliminar usuario (cascada elimina perfil por FK ON DELETE CASCADE)
-    jdbcTemplate.update("DELETE FROM users WHERE username = ?", username);
+    jdbcTemplate.update("DELETE FROM users WHERE username = ?", email);
   }
 
   //TODO: implementar para desactivación o activación de usuarios, verificar usos practicos.
@@ -98,21 +96,21 @@ public class UserProfileService {
    * Habilita o deshabilita un usuario.
    */
   @Transactional
-  public void setEnabled(String username, boolean enabled) {
+  public void setEnabled(String email, boolean enabled) {
     jdbcTemplate.update(
         "UPDATE users SET enabled = ? WHERE username = ?",
-        enabled, username
+        enabled, email
     );
   }
 
   /**
    * Verifica si existe un usuario.
    */
-  public boolean userExists(String username) {
+  public boolean userExists(String email) {
     Integer count = jdbcTemplate.queryForObject(
         "SELECT COUNT(*) FROM users WHERE username = ?",
         Integer.class,
-        username
+        email
     );
     return count != null && count > 0;
   }

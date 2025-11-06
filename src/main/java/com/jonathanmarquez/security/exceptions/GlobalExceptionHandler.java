@@ -167,7 +167,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   protected ResponseEntity<ErrorApiResponse> handleUserNotAuthenticatedException(
       UserNotAuthenticatedException ex, WebRequest request) {
 
-    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex, "Authentication failed: " + ex.getMessage());
+    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex,
+                                                         "Authentication failed: " + ex.getMessage());
 
     ErrorApiResponse response = createErrorResponse(
         ex,
@@ -207,9 +208,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * Maneja errores de validación de Spring (@Valid).
    * Similar a handleMethodArgumentNotValid de Spring.
    */
-  protected ResponseEntity<ErrorApiResponse> handleMethodArgumentNotValidException(
-      MethodArgumentNotValidException ex, WebRequest request) {
 
+  @Override
+  @Nullable
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                @Nullable HttpHeaders headers,
+                                                                @Nullable HttpStatusCode statusCode,
+                                                                @NonNull WebRequest request) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
 
     String errorDetails = ex.getBindingResult()
@@ -239,7 +244,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     log.error("Unhandled exception", ex);
 
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex, String.format("%s: %s", ex.getClass().getSimpleName(), ex.getMessage()));
+    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex,
+                                                         String.format("%s: %s", ex.getClass().getSimpleName(),
+                                                                       ex.getMessage()));
 
     ErrorApiResponse response = createErrorResponse(
         ex,

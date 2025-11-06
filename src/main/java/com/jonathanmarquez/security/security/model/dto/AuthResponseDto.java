@@ -2,6 +2,7 @@ package com.jonathanmarquez.security.security.model.dto;
 
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -10,12 +11,12 @@ import java.util.List;
  */
 @Builder
 public record AuthResponseDto(
-    String username,
     String email,
     String firstName,
     String lastName,
     String fullName,
     String phone,
+    LocalDate dateOfBirth,
     List<String> authorities,
     boolean enabled
 ) {

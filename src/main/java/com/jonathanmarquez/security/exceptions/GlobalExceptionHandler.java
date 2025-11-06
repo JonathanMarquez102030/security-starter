@@ -3,6 +3,7 @@ package com.jonathanmarquez.security.exceptions;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundException;
+import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +99,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         httpStatus,
         buildUserFriendlyMessage(ex, httpStatus),
         getPath(request),
-        buildDetails(ex, null)
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
     );
 
     return new ResponseEntity<>(response, headers, httpStatus);
@@ -143,7 +144,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ex.getStatus(),
         ex.getMessage(),
         getPath(request),
-        buildDetails(ex, null)
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
     );
 
     return ResponseEntity.status(ex.getStatus()).body(response);
@@ -156,7 +157,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   protected ResponseEntity<ErrorApiResponse> handleUserNotAuthenticatedException(
       UserNotAuthenticatedException ex, WebRequest request) {
 
-    String details = buildDetails(ex, "Authentication failed: " + ex.getMessage());
+    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex, "Authentication failed: " + ex.getMessage());
 
     ErrorApiResponse response = createErrorResponse(
         ex,
@@ -181,7 +182,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ex.getStatus(),
         ex.getMessage(),
         getPath(request),
-        buildDetails(ex,null)
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
     );
 
     return ResponseEntity.status(ex.getStatus()).body(response);
@@ -228,7 +229,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     log.error("Unhandled exception", ex);
 
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    String details = buildDetails(ex, String.format("%s: %s", ex.getClass().getSimpleName(), ex.getMessage()));
+    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex, String.format("%s: %s", ex.getClass().getSimpleName(), ex.getMessage()));
 
     ErrorApiResponse response = createErrorResponse(
         ex,
@@ -296,65 +297,46 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // Mapeo de excepciones a mensajes amigables
     return switch (ex) {
-      case HttpRequestMethodNotSupportedException e ->
-          "Método HTTP no permitido para este endpoint";
+      case HttpRequestMethodNotSupportedException e -> "Método HTTP no permitido para este endpoint";
 
-      case HttpMediaTypeNotSupportedException e ->
-          "Tipo de contenido no soportado. Use 'application/json'";
+      case HttpMediaTypeNotSupportedException e -> "Tipo de contenido no soportado. Use 'application/json'";
 
       case HttpMediaTypeNotAcceptableException e ->
           "El servidor no puede generar una respuesta en el formato solicitado";
 
-      case MissingPathVariableException e ->
-          "Falta una variable de ruta requerida";
+      case MissingPathVariableException e -> "Falta una variable de ruta requerida";
 
-      case MissingServletRequestParameterException e ->
-          "Faltan parámetros requeridos en la solicitud";
+      case MissingServletRequestParameterException e -> "Faltan parámetros requeridos en la solicitud";
 
-      case MissingServletRequestPartException e ->
-          "Falta una parte requerida en la solicitud multipart";
+      case MissingServletRequestPartException e -> "Falta una parte requerida en la solicitud multipart";
 
-      case ServletRequestBindingException e ->
-          "Error al vincular los parámetros de la solicitud";
+      case ServletRequestBindingException e -> "Error al vincular los parámetros de la solicitud";
 
-      case MethodArgumentNotValidException e ->
-          "Error de validación en los datos enviados";
+      case MethodArgumentNotValidException e -> "Error de validación en los datos enviados";
 
-      case HandlerMethodValidationException e ->
-          "Error de validación en los parámetros del método";
+      case HandlerMethodValidationException e -> "Error de validación en los parámetros del método";
 
-      case NoHandlerFoundException e ->
-          "Endpoint no encontrado";
+      case NoHandlerFoundException e -> "Endpoint no encontrado";
 
-      case NoResourceFoundException e ->
-          "Recurso no encontrado";
+      case NoResourceFoundException e -> "Recurso no encontrado";
 
-      case AsyncRequestTimeoutException e ->
-          "La solicitud asíncrona ha excedido el tiempo de espera";
+      case AsyncRequestTimeoutException e -> "La solicitud asíncrona ha excedido el tiempo de espera";
 
-      case ErrorResponseException e ->
-          "Error en la respuesta del servidor";
+      case ErrorResponseException e -> "Error en la respuesta del servidor";
 
-      case MaxUploadSizeExceededException e ->
-          "El archivo excede el tamaño máximo permitido";
+      case MaxUploadSizeExceededException e -> "El archivo excede el tamaño máximo permitido";
 
-      case ConversionNotSupportedException e ->
-          "Error interno: conversión de tipo no soportada";
+      case ConversionNotSupportedException e -> "Error interno: conversión de tipo no soportada";
 
-      case TypeMismatchException e ->
-          "Tipo de dato inválido en los parámetros";
+      case TypeMismatchException e -> "Tipo de dato inválido en los parámetros";
 
-      case HttpMessageNotReadableException e ->
-          "El cuerpo de la solicitud no es válido o está mal formado";
+      case HttpMessageNotReadableException e -> "El cuerpo de la solicitud no es válido o está mal formado";
 
-      case HttpMessageNotWritableException e ->
-          "Error interno al escribir la respuesta";
+      case HttpMessageNotWritableException e -> "Error interno al escribir la respuesta";
 
-      case MethodValidationException e ->
-          "Error de validación en el método";
+      case MethodValidationException e -> "Error de validación en el método";
 
-      case AsyncRequestNotUsableException e ->
-          "La solicitud asíncrona ya no es utilizable";
+      case AsyncRequestNotUsableException e -> "La solicitud asíncrona ya no es utilizable";
 
       default -> {
         // Si es 4xx, mensaje genérico para cliente
@@ -365,34 +347,5 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         yield "Error interno del servidor";
       }
     };
-  }
-
-
-  /**
-   * Construye detalles técnicos con contexto adicional.
-   *
-   * @param ex                la excepción
-   * @param additionalContext contexto adicional
-   * @return detalles técnicos o null si estamos en producción
-   */
-  private String buildDetails(Exception ex, @Nullable String additionalContext) {
-
-    if (profileDetector.isProfileActive("prod")) {
-      return null;
-    }
-
-    StringBuilder details = new StringBuilder();
-
-    if (additionalContext != null) {
-      details.append(additionalContext);
-    } else if (ex.getMessage() != null) {
-      details.append(ex.getMessage());
-    }
-
-    if (details.isEmpty()) {
-      details.append(ex.getClass().getSimpleName());
-    }
-
-    return details.toString();
   }
 }

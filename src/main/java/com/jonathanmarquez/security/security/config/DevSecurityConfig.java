@@ -5,6 +5,7 @@ import com.jonathanmarquez.security.security.filter.JWTTokenGeneratorFilter;
 import com.jonathanmarquez.security.security.filter.JWTTokenValidatorFilter;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
+import com.jonathanmarquez.security.utils.ProfileDetector;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,7 @@ public class DevSecurityConfig {
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
   private final UserDetailsService userDetailsService;
+  private final ProfileDetector profileDetector;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,40 +50,39 @@ public class DevSecurityConfig {
     http.sessionManagement(session ->
                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-    // 2. CORS (permisivo para desarrollo)
-    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+    // 2. CORS (para desarrollo)
+    http.cors(cors -> cors.configurationSource(configureCorsConfigurationSource()));
 
-    // 3. CSRF con cookies (seguro pero no httpOnly para JavaScript)
+    // 3. Configuración CSRF
     configureCsrf(http);
 
-    // 4. Filtros JWT personalizados
-    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new JWTTokenGeneratorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+    // 4. Configuración de filtros personalizados
+    configureCustomFilters(http);
 
-    // 5. Reglas de autorización
-    http.authorizeHttpRequests(auth -> auth
-        .requestMatchers(
-            "/api/auth/register",
-            "/api/auth/csrf",
-            "/api/auth/refresh",
-            "/api/auth/public/**",
-            "/error",
-            "/api/test/**"
-        ).permitAll()
-        .requestMatchers("/api/auth/login", "/api/auth/me",  "/api/auth/logout").authenticated()
-        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
-        .anyRequest().authenticated()
-    );
 
-    // 6. HTTP Basic (solo para login inicial)
-    http.httpBasic(basic -> {});
+    // 5. Configuración de reglas de autorización
+    configureAuthorization(http);
 
-    // 7. Deshabilitar form login
-    http.formLogin(AbstractHttpConfigurer::disable);
+
+    // 6. configureFormLogin  y HTTP Basic
+    configureFormLogin(http);
+    configureHttpBasic(http);
+    configureExceptionHandling(http);
 
     return http.build();
+  }
+
+  private CorsConfigurationSource configureCorsConfigurationSource() {
+    return request -> {
+      CorsConfiguration config = new CorsConfiguration();
+      config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
+      config.setAllowedMethods(Collections.singletonList("*"));
+      config.setAllowCredentials(true);
+      config.setAllowedHeaders(Collections.singletonList("*"));
+      config.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
+      config.setMaxAge(3600L);
+      return config;
+    };
   }
 
   private void configureCsrf(HttpSecurity http) throws Exception {
@@ -107,17 +108,43 @@ public class DevSecurityConfig {
     );
   }
 
-  private CorsConfigurationSource corsConfigurationSource() {
-    return request -> {
-      CorsConfiguration config = new CorsConfiguration();
-      config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000"));
-      config.setAllowedMethods(Collections.singletonList("*"));
-      config.setAllowCredentials(true);
-      config.setAllowedHeaders(Collections.singletonList("*"));
-      config.setExposedHeaders(List.of("Authorization", "X-XSRF-TOKEN"));
-      config.setMaxAge(3600L);
-      return config;
-    };
+  private void configureCustomFilters(HttpSecurity http) {
+    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService), BasicAuthenticationFilter.class);
+    http.addFilterAfter(new JWTTokenGeneratorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
+    http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+  }
+
+  private void configureAuthorization(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(auth -> auth
+        .requestMatchers(
+            "/api/auth/register",
+            "/api/auth/csrf",
+            "/api/auth/refresh",
+            "/api/auth/public/**",
+            "/error",
+            "/api/test/**"
+        ).permitAll()
+        .requestMatchers("/api/auth/login", "/api/auth/me",  "/api/auth/logout").authenticated()
+        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+        .anyRequest().authenticated()
+    );
+  }
+
+  private void configureFormLogin(HttpSecurity http) throws Exception {
+    http.formLogin(AbstractHttpConfigurer::disable);
+  }
+
+
+  private void configureHttpBasic(HttpSecurity http) throws Exception {
+    http.httpBasic(hbc ->
+                       hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint(profileDetector)));
+
+  }
+
+  private void configureExceptionHandling(HttpSecurity http) throws Exception {
+    http.exceptionHandling(ehc ->
+                               ehc.accessDeniedHandler(new CustomAccessDeniedHandler(profileDetector)));
   }
 
   @Bean

@@ -10,8 +10,7 @@ import com.jonathanmarquez.security.security.model.dto.AuthResponseDto;
 import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
 import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
-import com.jonathanmarquez.security.security.service.CustomUserDetailsService;
-import com.jonathanmarquez.security.security.service.UserProfileService;
+import com.jonathanmarquez.security.security.service.ports.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,7 +57,6 @@ import java.util.List;
 public class AuthController {
 
   private final UserProfileService userProfileService;
-  private final CustomUserDetailsService userDetailsService;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
   private final UserProfileMapper userProfileMapper;
@@ -188,7 +186,7 @@ public class AuthController {
       user = (SecurityUserDetails) authentication.getPrincipal();
     } else {
       String username = authentication.getName();
-      user = (SecurityUserDetails) userDetailsService.loadUserByUsername(username);
+      user = (SecurityUserDetails) userProfileService.getUserDetails(username);
     }
 
     AuthResponseDto authData = buildAuthResponse(user);

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +23,9 @@ public class JwtUtil {
 
   private final Environment env;
 
+  @Value("${spring.application.name}")
+  private String appName;
+
   private SecretKey getSigningKey() {
     String secret = env.getProperty("jwt.secret.key", "default_secret_min_length_256bits");
     return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -36,7 +40,7 @@ public class JwtUtil {
     );
 
     return Jwts.builder()
-               .issuer(env.getProperty("jwt.issuer", "E-Commerce-App"))
+               .issuer(env.getProperty("jwt.issuer", appName))
                .subject(authentication.getName())
                .claim("username", authentication.getName())
                .claim("authorities", authentication.getAuthorities().stream()
@@ -58,7 +62,7 @@ public class JwtUtil {
     );
 
     return Jwts.builder()
-               .issuer(env.getProperty("jwt.issuer", "E-Commerce-App"))
+               .issuer(env.getProperty("jwt.issuer", appName))
                .subject(username)
                .claim("username", username)
                .claim("type", "REFRESH")

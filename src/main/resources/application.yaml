@@ -19,6 +19,6 @@ jwt:
     key: ${JWT_SECRET:your-very-secure-secret-key-min-256-bits-long-change-this-in-production}
   issuer: ${JWT_ISSUER:Security-Template-App}
   access:
-    expiration: ${JWT_ACCESS_EXPIRATION_MS:20000}    # 15 minutos
+    expiration: ${JWT_ACCESS_EXPIRATION_MS:20000}    # 20 segundos
   refresh:
     expiration: ${JWT_REFRESH_EXPIRATION_MS:604800000} # 7 días

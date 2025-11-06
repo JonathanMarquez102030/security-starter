@@ -2,8 +2,11 @@ package com.jonathanmarquez.security.security.service;
 
 import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
+import com.jonathanmarquez.security.security.service.ports.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,11 +21,12 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-public class UserProfileService {
+public class UserProfileServiceImpl implements UserProfileService {
 
   private final JdbcTemplate jdbcTemplate;
   private final UserProfileRepository userProfileRepository;
   private final PasswordEncoder passwordEncoder;
+  private final UserDetailsService userDetailsService;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
@@ -32,6 +36,7 @@ public class UserProfileService {
    * @param authorities lista de authorities a asignar (ej: ["ROLE_USER"])
    * @return el perfil creado
    */
+  @Override
   @Transactional
   public UserProfile createUser(String email, String rawPassword, List<String> authorities) {
 
@@ -58,9 +63,16 @@ public class UserProfileService {
     return userProfileRepository.save(profile);
   }
 
+  @Override
+  public UserDetails getUserDetails(String email) {
+    return userDetailsService.loadUserByUsername(email);
+  }
+
   /**
    * Actualiza solo el perfil extendido (no afecta credenciales).
    */
+  @Override
+  @Transactional
   public UserProfile updateProfile(UserProfile profile) {
     return userProfileRepository.save(profile);
   }
@@ -69,6 +81,7 @@ public class UserProfileService {
   /**
    * Actualiza la contraseña del usuario.
    */
+  @Override
   @Transactional
   public void updatePassword(String email, String newRawPassword) {
     String encodedPassword = passwordEncoder.encode(newRawPassword);
@@ -82,6 +95,7 @@ public class UserProfileService {
   /**
    * Elimina completamente un usuario (con cascada a perfil y authorities).
    */
+  @Override
   @Transactional
   public void deleteUser(String email) {
     // 1. Eliminar authorities
@@ -95,6 +109,7 @@ public class UserProfileService {
   /**
    * Habilita o deshabilita un usuario.
    */
+  @Override
   @Transactional
   public void setEnabled(String email, boolean enabled) {
     jdbcTemplate.update(
@@ -106,6 +121,7 @@ public class UserProfileService {
   /**
    * Verifica si existe un usuario.
    */
+  @Override
   public boolean userExists(String email) {
     Integer count = jdbcTemplate.queryForObject(
         "SELECT COUNT(*) FROM users WHERE username = ?",

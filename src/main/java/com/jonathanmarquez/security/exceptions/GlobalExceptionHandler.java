@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.exceptions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundException;
@@ -8,8 +9,11 @@ import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.TransactionException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -18,6 +22,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.method.MethodValidationException;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -39,7 +45,11 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
 
 /**
@@ -337,6 +347,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       case MethodValidationException e -> "Error de validación en el método";
 
       case AsyncRequestNotUsableException e -> "La solicitud asíncrona ya no es utilizable";
+
+      // Excepciones de Base de Datos
+      case DataAccessException e -> "Error al acceder a la base de datos";
+
+      case ConstraintViolationException e -> "Violación de restricciones de validación";
+
+      // Excepciones de Seguridad
+      case AccessDeniedException e -> "No tiene permisos para acceder a este recurso";
+
+      case AuthenticationException e -> "Credenciales inválidas o token expirado";
+
+
+      // Excepciones de Negocio Comunes
+      case IllegalArgumentException e -> "Argumento inválido en la solicitud";
+
+      case IllegalStateException e -> "La operación no se puede realizar en el estado actual";
+
+      case NullPointerException e -> "Error interno: valor nulo inesperado";
+
+      // Excepciones de Transacciones
+      case TransactionException e -> "Error en la transacción de base de datos";
+
+      // Excepciones de Timeout
+      case SocketTimeoutException e -> "Tiempo de espera agotado en la conexión";
+
+      // Excepciones de JSON/Serialización
+      case JsonProcessingException e -> "Error al procesar formato JSON";
+
+      // Excepciones de Recursos
+      case FileNotFoundException e -> "Archivo no encontrado";
+
+      case IOException e -> "Error de entrada/salida al procesar el recurso";
+
+      // Excepciones de Límites
+      case RejectedExecutionException e -> "El servidor está sobrecargado. Intente nuevamente más tarde";
 
       default -> {
         // Si es 4xx, mensaje genérico para cliente

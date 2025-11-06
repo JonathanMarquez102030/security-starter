@@ -1,7 +1,9 @@
 package com.jonathanmarquez.security.exceptions.customexceptions;
 
-public class UserNotAuthenticatedException extends RuntimeException {
-  private static final String DEFAULT_MESSAGE = "Usuario no autenticado.";
+import org.springframework.http.HttpStatus;
+
+public class UserNotAuthenticatedException extends RuntimeException implements CustomErrorResponse {
+  private static final String DEFAULT_MESSAGE = "El usuario no esta autenticado";
 
   public UserNotAuthenticatedException() {
     super(DEFAULT_MESSAGE);
@@ -17,5 +19,10 @@ public class UserNotAuthenticatedException extends RuntimeException {
 
   public UserNotAuthenticatedException(Throwable cause) {
     super(DEFAULT_MESSAGE, cause);
+  }
+
+  @Override
+  public HttpStatus getStatus() {
+    return HttpStatus.UNAUTHORIZED;
   }
 }

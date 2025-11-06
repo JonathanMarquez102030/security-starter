@@ -1,9 +1,5 @@
 package com.jonathanmarquez.security.exceptions.prueba;
 
-import com.jonathanmarquez.security.exceptions.customexceptions.ConflictException;
-import com.jonathanmarquez.security.exceptions.customexceptions.ForbiddenException;
-import com.jonathanmarquez.security.exceptions.customexceptions.ResourceNotFoundException;
-import com.jonathanmarquez.security.exceptions.customexceptions.UnauthorizedException;
 import com.jonathanmarquez.security.exceptions.ApiResponseFactory;
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
 import jakarta.validation.constraints.Email;
@@ -89,37 +85,6 @@ public class TestResponseController {
         return ResponseEntity.ok(responseFactory.success(data, "Validación exitosa"));
     }
 
-    /**
-     * Prueba recurso no encontrado (404)
-     */
-    @GetMapping("/not-found")
-    public ResponseEntity<?> testNotFound() {
-        throw new ResourceNotFoundException("El usuario con ID 999 no fue encontrado");
-    }
-
-    /**
-     * Prueba no autorizado (401)
-     */
-    @GetMapping("/unauthorized")
-    public ResponseEntity<?> testUnauthorized() {
-        throw new UnauthorizedException("Token de acceso inválido o expirado");
-    }
-
-    /**
-     * Prueba prohibido (403)
-     */
-    @GetMapping("/forbidden")
-    public ResponseEntity<?> testForbidden() {
-        throw new ForbiddenException("No tiene permisos para acceder a este recurso");
-    }
-
-    /**
-     * Prueba conflicto (409)
-     */
-    @PostMapping("/conflict")
-    public ResponseEntity<?> testConflict() {
-        throw new ConflictException("El email ya está registrado en el sistema");
-    }
 
     /**
      * Prueba error interno del servidor (500)

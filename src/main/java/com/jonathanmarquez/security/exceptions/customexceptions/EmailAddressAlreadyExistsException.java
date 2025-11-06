@@ -1,7 +1,9 @@
 package com.jonathanmarquez.security.exceptions.customexceptions;
 
-public class EmailAddressAlreadyExistsException extends RuntimeException {
-  private static final String DEFAULT_MESSAGE = "Ya existe una cuenta con ese correo.";
+import org.springframework.http.HttpStatus;
+
+public class EmailAddressAlreadyExistsException extends RuntimeException implements CustomErrorResponse {
+  private static final String DEFAULT_MESSAGE = "Ya existe una cuenta con ese correo";
 
   public EmailAddressAlreadyExistsException() {
     super(DEFAULT_MESSAGE);
@@ -17,5 +19,10 @@ public class EmailAddressAlreadyExistsException extends RuntimeException {
 
   public EmailAddressAlreadyExistsException(Throwable cause) {
     super(DEFAULT_MESSAGE, cause);
+  }
+
+  @Override
+  public HttpStatus getStatus() {
+    return HttpStatus.CONFLICT;
   }
 }

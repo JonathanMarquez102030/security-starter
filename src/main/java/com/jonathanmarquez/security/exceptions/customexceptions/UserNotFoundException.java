@@ -1,15 +1,17 @@
 package com.jonathanmarquez.security.exceptions.customexceptions;
 
+import org.springframework.http.HttpStatus;
+
 /**
  * Excepción que indica que un producto no ha sido encontrado.
  *
  * <p>Esta excepción se lanza cuando se intenta acceder a un producto que no existe en la base de
  * datos.
  */
-public class UserNotFoundException extends RuntimeException {
+public class UserNotFoundException extends RuntimeException implements CustomErrorResponse {
 
 
-  private static final String DEFAULT_MESSAGE = "Producto no encontrado.";
+  private static final String DEFAULT_MESSAGE = "Usuario no encontrado";
 
   public UserNotFoundException() {
     super(DEFAULT_MESSAGE);
@@ -25,5 +27,10 @@ public class UserNotFoundException extends RuntimeException {
 
   public UserNotFoundException(Throwable cause) {
     super(DEFAULT_MESSAGE, cause);
+  }
+
+  @Override
+  public HttpStatus getStatus() {
+    return HttpStatus.NOT_FOUND;
   }
 }

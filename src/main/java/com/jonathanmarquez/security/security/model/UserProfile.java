@@ -1,12 +1,13 @@
 package com.jonathanmarquez.security.security.model;
 
-import jakarta.persistence.*;
+import com.jonathanmarquez.security.jpa.AuditableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 /**
  * Entidad JPA para extender la información del usuario.
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserProfile {
+public class UserProfile extends AuditableEntity {
 
   @Id
   @Column(name = "email", length = 255, nullable = false, unique = true)
@@ -42,12 +43,4 @@ public class UserProfile {
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
-
-    @Column(name = "created_at", updatable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }

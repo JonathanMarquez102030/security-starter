@@ -37,7 +37,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
     String message = determineErrorMessage(authException);
     String errorReason = determineErrorReason(authException);
 
-    ErrorApiResponse errorResponse = ErrorApiResponse.builder()
+                                                  ErrorApiResponse errorResponse = ErrorApiResponse.builder()
                                                      .success(false)
                                                      .message(message)
                                                      .status(status.getReasonPhrase().toLowerCase())

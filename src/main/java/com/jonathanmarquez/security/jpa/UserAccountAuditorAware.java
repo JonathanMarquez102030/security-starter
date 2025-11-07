@@ -20,7 +20,7 @@ public class UserAccountAuditorAware implements AuditorAware<String> {
   /**
    * Obtiene la identificación del usuario actualmente autenticado del SecurityContext.
    *
-   * @return Opcional que contiene el UUID del usuario actual, o vacío si:
+   * @return Opcional que contiene el identificador del usuario actual, o vacío si:
    * - No existe autenticación
    * - El usuario no está autenticado
    * - La autenticación es anónima

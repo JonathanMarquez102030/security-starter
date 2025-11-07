@@ -26,6 +26,8 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.method.MethodValidationException;
@@ -52,6 +54,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.time.LocalDateTime;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.stream.Collectors;
@@ -120,6 +124,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   /**
+   * Maneja todas las excepciones no controladas.
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorApiResponse> handleGeneric(
+      Exception ex, WebRequest request) {
+
+    log.error("Unhandled exception", ex);
+
+    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex,
+                                                         String.format("%s: %s", ex.getClass().getSimpleName(),
+                                                                       ex.getMessage()));
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        ex.getMessage(),
+        getPath(request),
+        details
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  // ================================================================================================================
+  // Métodos específicos para cada tipo de excepción custom.
+  // ================================================================================================================
+
+  /**
    * Maneja todas las excepciones personalizadas planteadas dentro del proyecto o modificar las existentes por Spring.
    *
    * @param ex      la excepción a manejar
@@ -141,10 +174,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       default -> handleGeneric(ex, request);
     };
   }
-
-  // ================================================================================================================
-  // Métodos específicos para cada tipo de excepción custom.
-  // ================================================================================================================
 
   /**
    * Maneja excepción de email ya existente.
@@ -205,6 +234,128 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
 
   // ================================================================================================================
+  // Métodos específicos para excepciones de base de datos
+  // ================================================================================================================
+
+  /**
+   * Maneja todas las excepciones relacionadas con base de datos, SQL y JPA.
+   */
+  @ExceptionHandler({
+      InvalidDataAccessResourceUsageException.class,
+      BadSqlGrammarException.class,
+      SQLGrammarException.class,
+      JpaSystemException.class,
+      JpaObjectRetrievalFailureException.class,
+      DataIntegrityViolationException.class,
+      DataAccessException.class
+  })
+  @Nullable
+  public final ResponseEntity<ErrorApiResponse> handleDatabaseException(
+      Exception ex, WebRequest request) {
+
+    return switch (ex) {
+      case BadSqlGrammarException e -> handleSqlGrammarError(e, request);
+      case InvalidDataAccessResourceUsageException e -> handleSqlGrammarError(e, request);
+      case SQLGrammarException e -> handleSqlGrammarError(e, request);
+      case JpaSystemException e -> handleJpaSystemError(e, request);
+      case JpaObjectRetrievalFailureException e -> handleJpaSystemError(e, request);
+      case DataIntegrityViolationException e -> handleDataIntegrityError(e, request);
+      case DataAccessException e -> handleGenericDatabaseError(e, request);
+      default -> handleGeneric(ex, request);
+    };
+  }
+
+  /**
+   * Maneja errores de SQL Grammar.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleSqlGrammarError(
+      Exception ex, WebRequest request) {
+
+    log.error("SQL Grammar error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+    String cleanedSqlError = extractSqlErrorMessage(ex);
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        buildUserFriendlyMessage(ex, status),
+        getPath(request),
+        cleanedSqlError
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja errores de JPA System.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleJpaSystemError(
+      Exception ex, WebRequest request) {
+
+    log.error("JPA System error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+    String cleanedError = extractJpaErrorMessage(ex);
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        buildUserFriendlyMessage(ex, status),
+        getPath(request),
+        cleanedError
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja errores de integridad de datos.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleDataIntegrityError(
+      DataIntegrityViolationException ex, WebRequest request) {
+
+    log.error("Data integrity error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.CONFLICT;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        buildUserFriendlyMessage(ex, status),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja errores genéricos de acceso a datos.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleGenericDatabaseError(
+      DataAccessException ex, WebRequest request) {
+
+    log.error("Database access error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        buildUserFriendlyMessage(ex, status),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  // ================================================================================================================
   // Métodos específicos para cada tipo de excepción de Spring personalizada.
   // ================================================================================================================
 
@@ -212,7 +363,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * Maneja errores de validación de Spring (@Valid).
    * Similar a handleMethodArgumentNotValid de Spring.
    */
-
   @Override
   @Nullable
   protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -233,55 +383,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         buildUserFriendlyMessage(ex, status),
         getPath(request),
         errorDetails
-    );
-
-    return ResponseEntity.status(status).body(response);
-  }
-
-  @ExceptionHandler({
-      InvalidDataAccessResourceUsageException.class,
-      BadSqlGrammarException.class,
-      SQLGrammarException.class
-  })
-  public ResponseEntity<ErrorApiResponse> handleSqlGrammarException(
-      Exception ex, WebRequest request) {
-
-    log.error("SQL Grammar error: {}", ex.getMessage(), ex);
-
-    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    String cleanedSqlError = extractSqlErrorMessage(ex);
-
-    ErrorApiResponse response = createErrorResponse(
-        ex,
-        status,
-        buildUserFriendlyMessage(ex, status),
-        getPath(request),
-        cleanedSqlError
-    );
-
-    return ResponseEntity.status(status).body(response);
-  }
-
-  /**
-   * Maneja todas las excepciones no controladas.
-   */
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorApiResponse> handleGeneric(
-      Exception ex, WebRequest request) {
-
-    log.error("Unhandled exception", ex);
-
-    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    String details = ErrorApiResponseHelper.buildDetails(profileDetector, ex,
-                                                         String.format("%s: %s", ex.getClass().getSimpleName(),
-                                                                       ex.getMessage()));
-
-    ErrorApiResponse response = createErrorResponse(
-        ex,
-        status,
-        ex.getMessage(),
-        getPath(request),
-        details
     );
 
     return ResponseEntity.status(status).body(response);
@@ -383,13 +484,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
       case AsyncRequestNotUsableException e -> "La solicitud asíncrona ya no es utilizable";
 
+      // Excepciones de SQL y Base de Datos (DE MÁS ESPECÍFICA A MÁS GENERAL)
+      case JpaSystemException e -> "Error en la configuración de persistencia de datos";
+
+      case JpaObjectRetrievalFailureException e -> "No se pudo recuperar el objeto de la base de datos";
+
       // Excepciones de Hibernate
-      case SQLGrammarException e ->
-          "Error en la estructura de la consulta a la base de datos";
+      case SQLGrammarException e -> "Error en la estructura de la consulta a la base de datos";
 
       // Excepciones de Base de Datos
-      case BadSqlGrammarException e ->
-          "Error en la estructura de la consulta a la base de datos";
+      case BadSqlGrammarException e -> "Error en la estructura de la consulta a la base de datos";
+
+      case InvalidDataAccessResourceUsageException e -> "Error en la configuración de la base de datos";
+
+      case SQLSyntaxErrorException e -> "Error de sintaxis en la consulta SQL";
+
+      case SQLException e -> "Error al ejecutar la operación en la base de datos";
 
       case DataIntegrityViolationException e ->
           "Violación de integridad de datos. El registro podría estar duplicado o referenciado";
@@ -402,7 +512,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       case AccessDeniedException e -> "No tiene permisos para acceder a este recurso";
 
       case AuthenticationException e -> "Credenciales inválidas o token expirado";
-
 
       // Excepciones de Negocio Comunes
       case IllegalArgumentException e -> "Argumento inválido en la solicitud";
@@ -463,6 +572,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return sqlError.replaceAll("\\\\n", " ")
                        .replaceAll("\\s+", " ")
                        .trim();
+      }
+    }
+
+    return message;
+  }
+
+  /**
+   * Extrae y limpia el mensaje de error JPA para hacerlo más legible.
+   */
+  private String extractJpaErrorMessage(Exception ex) {
+    if (profileDetector.isProfileActive("prod")) {
+      return null;
+    }
+
+    String message = ex.getMessage();
+    if (message == null) {
+      return ex.getClass().getSimpleName();
+    }
+
+    // Para JpaSystemException, el mensaje técnico está después de ": "
+    if (message.contains(": ")) {
+      int colonIndex = message.indexOf(": ");
+      if (colonIndex != -1 && colonIndex + 2 < message.length()) {
+        return message.substring(colonIndex + 2).trim();
       }
     }
 

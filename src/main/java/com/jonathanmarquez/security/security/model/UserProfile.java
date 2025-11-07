@@ -12,7 +12,7 @@ import java.time.LocalDate;
 /**
  * Entidad JPA para extender la información del usuario.
  * Se relaciona con la tabla 'users' de Spring Security mediante el username.
- * 
+ * <p>
  * JPA creará esta tabla automáticamente con FK a 'users'.
  */
 @Entity
@@ -25,8 +25,8 @@ import java.time.LocalDate;
 public class UserProfile extends AuditableEntity {
 
   @Id
-  @Column(name = "email", length = 255, nullable = false, unique = true)
-  private String email; // FK a users.username (NO @ManyToOne)
+  @Column(name = "email", nullable = false, unique = true)
+  private String email; // FK a users.username
 
   @Column(name = "first_name", length = 100)
     private String firstName;

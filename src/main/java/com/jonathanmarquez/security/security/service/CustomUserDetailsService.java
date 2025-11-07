@@ -33,12 +33,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     // 1. Cargar usuario base desde 'users'
     String userSql = "SELECT username, password, enabled FROM users WHERE username = ?";
 
-    var userOpt = jdbcTemplate.query(userSql, new Object[]{username}, (rs, rowNum) ->
+    var userOpt = jdbcTemplate.query(userSql, (rs, rowNum) ->
         new Object[]{
             rs.getString("username"),
             rs.getString("password"),
             rs.getBoolean("enabled")
-        }
+        }, username
     ).stream().findFirst();
 
     if (userOpt.isEmpty()) {

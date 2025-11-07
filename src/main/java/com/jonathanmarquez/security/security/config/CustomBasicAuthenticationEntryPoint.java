@@ -8,7 +8,6 @@ import com.jonathanmarquez.security.utils.ProfileDetector;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
-      throws IOException, ServletException {
+      throws IOException {
 
     HttpStatus status = HttpStatus.UNAUTHORIZED;
     String path = request.getRequestURI();

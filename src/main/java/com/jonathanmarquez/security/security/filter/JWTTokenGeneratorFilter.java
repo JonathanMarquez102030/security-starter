@@ -63,17 +63,16 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
 
 
   /**
-   * Determina si el request que se esta procesando debe ser filtrado por este
+   * Determina si el request que se está procesando debe ser filtrado por este
    * Filtro. En este caso, solo se filtran las peticiones que tengan como
    * servletPath a "/user".
    *
-   * @param request La peticion que se esta procesando
+   * @param request La peticion que se está procesando
    * @return boolean true si el request no debe ser filtrado, false en caso
    * contrario
-   * @throws ServletException si ocurre un error al procesar el request
    */
   @Override
-  protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+  protected boolean shouldNotFilter(HttpServletRequest request) {
     return !request.getServletPath().equals("/api/auth/login");
   }
 }

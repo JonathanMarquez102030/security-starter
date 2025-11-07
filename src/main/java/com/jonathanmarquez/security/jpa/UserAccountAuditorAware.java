@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * Implementación de AuditorAware que proporciona la ID del usuario autenticado actual para la auditoría JPA.
+ * Implementación de AuditorAware que proporciona el ID del usuario autenticado actual para la auditoría JPA.
  * Esta clase se utiliza para completar automáticamente los campos creado_por y modificado_por en entidades auditadas.
  */
 @Component

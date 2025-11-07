@@ -11,15 +11,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.TransactionException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.AccessDeniedException;
@@ -234,6 +238,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(status).body(response);
   }
 
+  @ExceptionHandler({
+      InvalidDataAccessResourceUsageException.class,
+      BadSqlGrammarException.class,
+      SQLGrammarException.class
+  })
+  public ResponseEntity<ErrorApiResponse> handleSqlGrammarException(
+      Exception ex, WebRequest request) {
+
+    log.error("SQL Grammar error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+    String cleanedSqlError = extractSqlErrorMessage(ex);
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        buildUserFriendlyMessage(ex, status),
+        getPath(request),
+        cleanedSqlError
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
   /**
    * Maneja todas las excepciones no controladas.
    */
@@ -355,7 +383,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
       case AsyncRequestNotUsableException e -> "La solicitud asíncrona ya no es utilizable";
 
+      // Excepciones de Hibernate
+      case SQLGrammarException e ->
+          "Error en la estructura de la consulta a la base de datos";
+
       // Excepciones de Base de Datos
+      case BadSqlGrammarException e ->
+          "Error en la estructura de la consulta a la base de datos";
+
+      case DataIntegrityViolationException e ->
+          "Violación de integridad de datos. El registro podría estar duplicado o referenciado";
+
       case DataAccessException e -> "Error al acceder a la base de datos";
 
       case ConstraintViolationException e -> "Violación de restricciones de validación";
@@ -399,5 +437,35 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         yield "Error interno del servidor";
       }
     };
+  }
+
+  /**
+   * Extrae y limpia el mensaje de error SQL para hacerlo más legible.
+   */
+  private String extractSqlErrorMessage(Exception ex) {
+    if (profileDetector.isProfileActive("prod")) {
+      return null;
+    }
+
+    String message = ex.getMessage();
+    if (message == null) {
+      return ex.getClass().getSimpleName();
+    }
+
+    // Buscar el patrón "ERROR: ..." hasta "]"
+    if (message.contains("ERROR:")) {
+      int errorStart = message.indexOf("ERROR:");
+      int errorEnd = message.indexOf("]", errorStart);
+
+      if (errorStart != -1 && errorEnd != -1) {
+        String sqlError = message.substring(errorStart, errorEnd);
+        // Limpiar saltos de línea y espacios múltiples
+        return sqlError.replaceAll("\\\\n", " ")
+                       .replaceAll("\\s+", " ")
+                       .trim();
+      }
+    }
+
+    return message;
   }
 }

@@ -4,6 +4,7 @@ import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlre
 import com.jonathanmarquez.security.exceptions.customexceptions.InvalidRefreshTokenException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
+import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.model.dto.AuthResponseDto;
@@ -133,7 +134,7 @@ public class AuthController {
     UserProfile profile = userProfileService.createUser(
         registerRequest.email(),
         registerRequest.password(),
-        List.of("ROLE_USER")
+        List.of(Role.ROLE_USER)
     );
 
     profile.setFirstName(registerRequest.firstName());

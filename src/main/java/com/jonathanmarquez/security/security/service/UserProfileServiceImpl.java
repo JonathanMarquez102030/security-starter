@@ -1,5 +1,8 @@
 package com.jonathanmarquez.security.security.service;
 
+import com.jonathanmarquez.security.security.config.SecurityProperties;
+import com.jonathanmarquez.security.security.enums.AuthorizationMode;
+import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
@@ -27,35 +30,79 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final UserProfileRepository userProfileRepository;
   private final PasswordEncoder passwordEncoder;
   private final UserDetailsService userDetailsService;
+  private final SecurityProperties securityProperties;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
    *
    * @param email email del usuario
-   * @param rawPassword contraseña en texto plano (se encodificará)
-   * @param authorities lista de authorities a asignar (ej: ["ROLE_USER"])
+   * @param rawPassword contraseña en texto plano (se codificará)
+   * @param roles lista de authorities/roles a asignar (ej: ["ROLE_USER"])
    * @return el perfil creado
    */
   @Override
   @Transactional
-  public UserProfile createUser(String email, String rawPassword, List<String> authorities) {
+  public UserProfile createUser(String email, String rawPassword, List<Role> roles) {
 
-    // 1. Crear usuario en tabla 'users' de Spring Security
+    // 1. Crea usuario en tabla 'users' de Spring Security
     String encodedPassword = passwordEncoder.encode(rawPassword);
     jdbcTemplate.update(
         "INSERT INTO users (username, password, enabled) VALUES (?, ?, ?)",
         email, encodedPassword, true
     );
 
-    // 2. Asignar authorities
-    for (String authority : authorities) {
-      jdbcTemplate.update(
-          "INSERT INTO authorities (username, authority) VALUES (?, ?)",
-          email, authority
-      );
+    // 2. Asigna authorities según el modo configurado
+    if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
+      // Modo GRUPOS: Asignar al grupo correspondiente
+      for (Role role : roles) {
+        String groupName = role.getGroupName();
+
+        // Verifica si el grupo existe
+        List<Integer> results = jdbcTemplate.query(
+            "SELECT id FROM groups WHERE group_name = ?",
+            (rs, rowNum) -> rs.getInt("id"),
+            groupName
+        );
+        Integer groupId = results.isEmpty() ? null : results.getFirst();
+
+        if (groupId == null) {
+          // Crea el grupo si no existe
+          jdbcTemplate.update(
+              "INSERT INTO groups (group_name) VALUES (?)",
+              groupName
+          );
+
+          // Obtiene el ID del grupo recién creado
+          groupId = jdbcTemplate.queryForObject(
+              "SELECT id FROM groups WHERE group_name = ?",
+              Integer.class,
+              groupName
+          );
+
+          // Inserta las autoridades del grupo
+          jdbcTemplate.update(
+              "INSERT INTO group_authorities (group_id, authority) VALUES (?, ?)",
+              groupId, role.name()
+          );
+        }
+
+        // Asigna usuario al grupo
+        jdbcTemplate.update(
+            "INSERT INTO group_members (username, group_id) VALUES (?, ?)",
+            email, groupId
+        );
+      }
+    } else {
+      // Modo AUTHORITIES: Inserta directamente en la tabla authorities
+      for (Role role : roles) {
+        jdbcTemplate.update(
+            "INSERT INTO authorities (username, authority) VALUES (?, ?)",
+            email, role.name()
+        );
+      }
     }
 
-    // 3. Crear perfil extendido
+    // 3. Crea perfil extendido
     UserProfile profile = UserProfile.builder()
                                      .email(email)
                                      .build();

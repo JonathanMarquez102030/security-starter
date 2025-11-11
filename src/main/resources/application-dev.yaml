@@ -26,3 +26,6 @@ logging:
     com.jonathanmarquez.security: DEBUG
     com.jonathanmarquez.security.security.filter: DEBUG
     com.jonathanmarquez.security.security.utils: DEBUG
+
+server:
+  port: 8081

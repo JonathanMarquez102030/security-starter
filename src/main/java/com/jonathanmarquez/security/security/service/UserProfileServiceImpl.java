@@ -35,6 +35,13 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
    *
+   * <p>
+   * Esta función realiza tres operaciones principales:
+   * 1. Crea el usuario en la tabla 'users' de Spring Security
+   * 2. Asigna authorities según el modo configurado (GROUPS o AUTHORITIES)
+   * 3. Crea el perfil extendido en 'user_profiles'
+   * </p>
+   *
    * @param email email del usuario
    * @param rawPassword contraseña en texto plano (se codificará)
    * @param roles lista de authorities/roles a asignar (ej: ["ROLE_USER"])
@@ -43,71 +50,9 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public UserProfile createUser(String email, String rawPassword, List<Role> roles) {
-
-    // 1. Crea usuario en tabla 'users' de Spring Security
-    String encodedPassword = passwordEncoder.encode(rawPassword);
-    jdbcTemplate.update(
-        "INSERT INTO users (username, password, enabled) VALUES (?, ?, ?)",
-        email, encodedPassword, true
-    );
-
-    // 2. Asigna authorities según el modo configurado
-    if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
-      // Modo GRUPOS: Asignar al grupo correspondiente
-      for (Role role : roles) {
-        String groupName = role.getGroupName();
-
-        // Verifica si el grupo existe
-        List<Integer> results = jdbcTemplate.query(
-            "SELECT id FROM groups WHERE group_name = ?",
-            (rs, rowNum) -> rs.getInt("id"),
-            groupName
-        );
-        Integer groupId = results.isEmpty() ? null : results.getFirst();
-
-        if (groupId == null) {
-          // Crea el grupo si no existe
-          jdbcTemplate.update(
-              "INSERT INTO groups (group_name) VALUES (?)",
-              groupName
-          );
-
-          // Obtiene el ID del grupo recién creado
-          groupId = jdbcTemplate.queryForObject(
-              "SELECT id FROM groups WHERE group_name = ?",
-              Integer.class,
-              groupName
-          );
-
-          // Inserta las autoridades del grupo
-          jdbcTemplate.update(
-              "INSERT INTO group_authorities (group_id, authority) VALUES (?, ?)",
-              groupId, role.name()
-          );
-        }
-
-        // Asigna usuario al grupo
-        jdbcTemplate.update(
-            "INSERT INTO group_members (username, group_id) VALUES (?, ?)",
-            email, groupId
-        );
-      }
-    } else {
-      // Modo AUTHORITIES: Inserta directamente en la tabla authorities
-      for (Role role : roles) {
-        jdbcTemplate.update(
-            "INSERT INTO authorities (username, authority) VALUES (?, ?)",
-            email, role.name()
-        );
-      }
-    }
-
-    // 3. Crea perfil extendido
-    UserProfile profile = UserProfile.builder()
-                                     .email(email)
-                                     .build();
-
-    return userProfileRepository.save(profile);
+    createUserCredentials(email, rawPassword);
+    assignAuthorities(email, roles);
+    return createUserProfile(email);
   }
 
   @Override
@@ -176,5 +121,123 @@ public class UserProfileServiceImpl implements UserProfileService {
         email
     );
     return count != null && count > 0;
+  }
+
+
+  /**
+   * Crea las credenciales del usuario en la tabla 'users' de Spring Security.
+   */
+  private void createUserCredentials(String email, String rawPassword) {
+    String encodedPassword = passwordEncoder.encode(rawPassword);
+    jdbcTemplate.update(
+        "INSERT INTO users (username, password, enabled) VALUES (?, ?, ?)",
+        email, encodedPassword, true
+    );
+  }
+
+  /**
+   * Asigna authorities al usuario según el modo configurado.
+   */
+  private void assignAuthorities(String email, List<Role> roles) {
+    if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
+      assignAuthoritiesViaGroups(email, roles);
+    } else {
+      assignAuthoritiesDirectly(email, roles);
+    }
+  }
+
+  /**
+   * Asigna authorities mediante grupos.
+   */
+  private void assignAuthoritiesViaGroups(String email, List<Role> roles) {
+    for (Role role : roles) {
+      String groupName = role.getGroupName();
+      Integer groupId = getOrCreateGroup(groupName, role);
+      assignUserToGroup(email, groupId);
+    }
+  }
+
+  /**
+   * Obtiene o crea un grupo si no existe.
+   */
+  private Integer getOrCreateGroup(String groupName, Role role) {
+    List<Integer> results = jdbcTemplate.query(
+        "SELECT id FROM groups WHERE group_name = ?",
+        (rs, rowNum) -> rs.getInt("id"),
+        groupName
+    );
+
+    Integer groupId = results.isEmpty() ? null : results.getFirst();
+
+    if (groupId == null) {
+      createGroup(groupName);
+      groupId = getGroupId(groupName);
+      createGroupAuthority(groupId, role);
+    }
+
+    return groupId;
+  }
+
+  /**
+   * Crea un nuevo grupo.
+   */
+  private void createGroup(String groupName) {
+    jdbcTemplate.update(
+        "INSERT INTO groups (group_name) VALUES (?)",
+        groupName
+    );
+  }
+
+  /**
+   * Obtiene el ID de un grupo por su nombre.
+   */
+  private Integer getGroupId(String groupName) {
+    return jdbcTemplate.queryForObject(
+        "SELECT id FROM groups WHERE group_name = ?",
+        Integer.class,
+        groupName
+    );
+  }
+
+  /**
+   * Crea la autoridad asociada a un grupo.
+   */
+  private void createGroupAuthority(Integer groupId, Role role) {
+    jdbcTemplate.update(
+        "INSERT INTO group_authorities (group_id, authority) VALUES (?, ?)",
+        groupId, role.name()
+    );
+  }
+
+  /**
+   * Asigna un usuario a un grupo.
+   */
+  private void assignUserToGroup(String email, Integer groupId) {
+    jdbcTemplate.update(
+        "INSERT INTO group_members (username, group_id) VALUES (?, ?)",
+        email, groupId
+    );
+  }
+
+  /**
+   * Asigna authorities directamente sin usar grupos.
+   */
+  private void assignAuthoritiesDirectly(String email, List<Role> roles) {
+    for (Role role : roles) {
+      jdbcTemplate.update(
+          "INSERT INTO authorities (username, authority) VALUES (?, ?)",
+          email, role.name()
+      );
+    }
+  }
+
+  /**
+   * Crea el perfil extendido del usuario.
+   */
+  private UserProfile createUserProfile(String email) {
+    UserProfile profile = UserProfile.builder()
+        .email(email)
+        .build();
+    return userProfileRepository.save(profile);
   }
 }

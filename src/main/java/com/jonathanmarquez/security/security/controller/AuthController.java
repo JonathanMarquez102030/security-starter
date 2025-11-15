@@ -321,12 +321,11 @@ public class AuthController {
    * @return AuthResponseDto con la información del usuario estructurada
    */
   private AuthResponseDto buildAuthResponse(SecurityUserDetails user) {
+
+    UserProfileDto profile = userProfileMapper.toUserProfileDto(user.getProfile());
     return AuthResponseDto.builder()
-                          .email(user.getEmail())
-                          .firstName(user.getProfile() != null ? user.getProfile().getFirstName() : null)
-                          .lastName(user.getProfile() != null ? user.getProfile().getLastName() : null)
+                          .profile(profile)
                           .fullName(user.getFullName())
-                          .phone(user.getProfile() != null ? user.getProfile().getPhone() : null)
                           .authorities(user.getAuthorities().stream()
                                            .map(GrantedAuthority::getAuthority)
                                            .toList())

@@ -1,28 +1,45 @@
 package com.jonathanmarquez.security.security.model.dto;
 
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
 /**
  * DTO para registro de nuevos usuarios.
  */
+@Builder
 public record RegisterRequestDto(
 
-    @NotBlank(message = "El email es requerido")
-    @Email(message = "El email es inválido")
-    String email,
+    @Valid
+    @JsonUnwrapped
+    UserProfileDto profile,
 
     @NotBlank(message = "El password es requerido")
-    @Size(min = 6, message = "El password debe tener al menos 6 caracteres")
-    String password,
-
-    String firstName,
-    String lastName,
-    String phone,
-    LocalDate dateOfBirth
+    @Size(min = 8, message = "El password debe tener al menos 8 caracteres")
+    String password
 ) {
+
+  public String email() {
+    return this.profile.email();
+  }
+  public String firstName() {
+    return this.profile.firstName();
+  }
+  public String lastName() {
+    return this.profile.lastName();
+  }
+  public String phone() {
+    return this.profile.phone();
+  }
+  public String profilePictureUrl() {
+    return this.profile.profilePictureUrl();
+  }
+  public LocalDate dateOfBirth() {
+    return this.profile.dateOfBirth();
+  }
 }

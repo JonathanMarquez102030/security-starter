@@ -28,10 +28,10 @@ public class UserProfile extends AuditableEntity {
   @Column(name = "email", nullable = false, unique = true)
   private String email; // FK a users.username
 
-  @Column(name = "first_name", length = 100)
+  @Column(name = "first_name", length = 100, nullable = false)
     private String firstName;
 
-  @Column(name = "last_name", length = 100)
+  @Column(name = "last_name", length = 100,  nullable = false)
     private String lastName;
 
 
@@ -41,6 +41,6 @@ public class UserProfile extends AuditableEntity {
     @Column(name = "profile_picture_url", length = 500)
     private String profilePictureUrl;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 }

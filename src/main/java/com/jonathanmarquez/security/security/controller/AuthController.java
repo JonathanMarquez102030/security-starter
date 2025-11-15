@@ -131,18 +131,9 @@ public class AuthController {
       );
     }
 
-    UserProfile profile = userProfileService.createUser(
-        registerRequest.email(),
-        registerRequest.password(),
-        List.of(Role.ROLE_USER)
-    );
+    UserProfile userProfile = userProfileService.createUser(registerRequest, List.of(Role.ROLE_USER));
 
-    profile.setFirstName(registerRequest.firstName());
-    profile.setLastName(registerRequest.lastName());
-    profile.setPhone(registerRequest.phone());
-    profile.setDateOfBirth(registerRequest.dateOfBirth());
-
-    UserProfileDto userProfileDto = userProfileMapper.toUserProfileDto(userProfileService.updateProfile(profile));
+    UserProfileDto userProfileDto = userProfileMapper.toUserProfileDto(userProfile);
 
     log.info("Usuario registrado exitosamente: {}", registerRequest.email());
 

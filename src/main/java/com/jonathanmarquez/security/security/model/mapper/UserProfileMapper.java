@@ -8,4 +8,6 @@ import org.mapstruct.Mapper;
 public abstract class UserProfileMapper {
 
   public abstract UserProfileDto toUserProfileDto(UserProfile userProfile);
+
+  public abstract UserProfile toUserProfile(UserProfileDto userProfileDto);
 }

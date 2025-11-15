@@ -4,6 +4,9 @@ import com.jonathanmarquez.security.security.config.SecurityProperties;
 import com.jonathanmarquez.security.security.enums.AuthorizationMode;
 import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.UserProfile;
+import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
+import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
+import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final PasswordEncoder passwordEncoder;
   private final UserDetailsService userDetailsService;
   private final SecurityProperties securityProperties;
+  private final UserProfileMapper userProfileMapper;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
@@ -42,17 +46,16 @@ public class UserProfileServiceImpl implements UserProfileService {
    * 3. Crea el perfil extendido en 'user_profiles'
    * </p>
    *
-   * @param email email del usuario
-   * @param rawPassword contraseña en texto plano (se codificará)
+   * @param registerRequestDto datos del usuario a crear
    * @param roles lista de authorities/roles a asignar (ej: ["ROLE_USER"])
    * @return el perfil creado
    */
   @Override
   @Transactional
-  public UserProfile createUser(String email, String rawPassword, List<Role> roles) {
-    createUserCredentials(email, rawPassword);
-    assignAuthorities(email, roles);
-    return createUserProfile(email);
+  public UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles) {
+    createUserCredentials(registerRequestDto.email(), registerRequestDto.password());
+    assignAuthorities(registerRequestDto.email(), roles);
+    return createUserProfile(registerRequestDto.profile());
   }
 
   @Override
@@ -234,10 +237,8 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Crea el perfil extendido del usuario.
    */
-  private UserProfile createUserProfile(String email) {
-    UserProfile profile = UserProfile.builder()
-        .email(email)
-        .build();
+  private UserProfile createUserProfile(UserProfileDto userProfileDto) {
+    UserProfile profile = userProfileMapper.toUserProfile(userProfileDto);
     return userProfileRepository.save(profile);
   }
 }

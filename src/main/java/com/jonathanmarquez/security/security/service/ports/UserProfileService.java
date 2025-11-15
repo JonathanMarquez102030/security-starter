@@ -2,13 +2,14 @@ package com.jonathanmarquez.security.security.service.ports;
 
 import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.UserProfile;
+import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
 public interface UserProfileService {
 
-  UserProfile createUser(String email, String rawPassword, List<Role> roles);
+  UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles);
 
   UserDetails getUserDetails(String email);
 

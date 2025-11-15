@@ -1,6 +1,5 @@
-package com.jonathanmarquez.security.security.service;
+package com.jonathanmarquez.security.security.config;
 
-import com.jonathanmarquez.security.security.config.SecurityProperties;
 import com.jonathanmarquez.security.security.enums.AuthorizationMode;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquez.security.security.model.UserProfile;

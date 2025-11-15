@@ -7,10 +7,11 @@ import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundExce
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.TransactionException;
-import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.SQLGrammarException;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
@@ -298,7 +299,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     log.error("JPA System error: {}", ex.getMessage(), ex);
 
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    String cleanedError = extractJpaErrorMessage(ex);
+    String cleanedError = extractErrorMessage(ex);
 
     ErrorApiResponse response = createErrorResponse(
         ex,
@@ -350,6 +351,80 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         buildUserFriendlyMessage(ex, status),
         getPath(request),
         ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+
+  // ================================================================================================================
+  // Métodos específicos para excepciones de validación
+  // ================================================================================================================
+
+  /**
+   * Maneja todas las excepciones de validación.
+   */
+  @ExceptionHandler({
+      UnexpectedTypeException.class,
+      ConstraintViolationException.class
+  })
+  @Nullable
+  public final ResponseEntity<ErrorApiResponse> handleValidationException(
+      Exception ex, WebRequest request) {
+
+    return switch (ex) {
+      case UnexpectedTypeException e -> handleUnexpectedTypeError(e, request);
+      case ConstraintViolationException e -> handleConstraintViolationError(e, request);
+      default -> handleGeneric(ex, request);
+    };
+  }
+
+  /**
+   * Maneja errores de validación de tipo inesperado.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleUnexpectedTypeError(
+      UnexpectedTypeException ex, WebRequest request) {
+
+    log.error("Validation type error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    String cleanedError = extractErrorMessage(ex);
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        "Error de configuración en las validaciones",
+        getPath(request),
+        cleanedError
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja errores de violación de restricciones de validación.
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleConstraintViolationError(
+      ConstraintViolationException ex, WebRequest request) {
+
+    log.error("Constraint violation error: {}", ex.getMessage(), ex);
+
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+
+    // Extraer detalles de las violaciones
+    String violations = ex.getConstraintViolations()
+                          .stream()
+                          .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                          .collect(Collectors.joining(", "));
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        "Violación de restricciones de validación",
+        getPath(request),
+        violations
     );
 
     return ResponseEntity.status(status).body(response);
@@ -506,6 +581,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
       case DataAccessException e -> "Error al acceder a la base de datos";
 
+      case UnexpectedTypeException e -> "Error de configuración en las validaciones";
+
       case ConstraintViolationException e -> "Violación de restricciones de validación";
 
       // Excepciones de Seguridad
@@ -581,7 +658,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   /**
    * Extrae y limpia el mensaje de error JPA para hacerlo más legible.
    */
-  private String extractJpaErrorMessage(Exception ex) {
+  private String extractErrorMessage(Exception ex) {
     if (profileDetector.isProfileActive("prod")) {
       return null;
     }

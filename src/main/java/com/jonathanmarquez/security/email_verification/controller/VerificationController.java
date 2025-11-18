@@ -1,12 +1,12 @@
-package com.jonathanmarquez.security.verification.controller;
+package com.jonathanmarquez.security.email_verification.controller;
 
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
-import com.jonathanmarquez.security.verification.dto.OtpResponseDto;
-import com.jonathanmarquez.security.verification.dto.ResendOtpRequestDto;
-import com.jonathanmarquez.security.verification.dto.VerifyOtpRequestDto;
-import com.jonathanmarquez.security.verification.service.OtpService;
+import com.jonathanmarquez.security.email_verification.dto.OtpResponseDto;
+import com.jonathanmarquez.security.email_verification.dto.ResendOtpRequestDto;
+import com.jonathanmarquez.security.email_verification.dto.VerifyOtpRequestDto;
+import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
-import com.jonathanmarquez.security.verification.service.EmailService;
+import com.jonathanmarquez.security.email_verification.service.EmailService;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

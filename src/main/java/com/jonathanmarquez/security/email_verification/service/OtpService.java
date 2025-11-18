@@ -1,6 +1,6 @@
-package com.jonathanmarquez.security.verification.service;
+package com.jonathanmarquez.security.email_verification.service;
 
-import com.jonathanmarquez.security.verification.dto.OtpResponseDto;
+import com.jonathanmarquez.security.email_verification.dto.OtpResponseDto;
 
 /**
  * Servicio para gestión de tokens OTP.

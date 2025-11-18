@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.verification.service;
+package com.jonathanmarquez.security.email_verification.service;
 
 /**
  * Servicio para envío de emails.

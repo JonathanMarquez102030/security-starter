@@ -7,11 +7,10 @@ import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundExce
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
-import com.jonathanmarquez.security.verification.exception.InvalidOtpException;
-import com.jonathanmarquez.security.verification.exception.OtpExpiredException;
-import com.jonathanmarquez.security.verification.exception.OtpMaxAttemptsException;
-import com.jonathanmarquez.security.verification.exception.ResendCooldownException;
-import jakarta.servlet.http.HttpServletRequest;
+import com.jonathanmarquez.security.email_verification.exception.InvalidOtpException;
+import com.jonathanmarquez.security.email_verification.exception.OtpExpiredException;
+import com.jonathanmarquez.security.email_verification.exception.OtpMaxAttemptsException;
+import com.jonathanmarquez.security.email_verification.exception.ResendCooldownException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;

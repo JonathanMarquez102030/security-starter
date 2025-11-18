@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.verification.exception;
+package com.jonathanmarquez.security.email_verification.exception;
 
 /**
  * Excepción lanzada cuando no se encuentra un OTP para el email especificado.

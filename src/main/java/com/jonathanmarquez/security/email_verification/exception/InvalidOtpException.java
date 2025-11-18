@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.verification.exception;
+package com.jonathanmarquez.security.email_verification.exception;
 
 /**
  * Excepción lanzada cuando el código OTP es inválido.

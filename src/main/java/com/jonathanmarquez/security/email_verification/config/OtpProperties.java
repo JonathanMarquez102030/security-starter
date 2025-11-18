@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.verification.config;
+package com.jonathanmarquez.security.email_verification.config;
 
 import lombok.Getter;
 import lombok.Setter;

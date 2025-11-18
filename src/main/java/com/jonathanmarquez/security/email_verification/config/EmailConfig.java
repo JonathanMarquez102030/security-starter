@@ -1,12 +1,6 @@
-package com.jonathanmarquez.security.verification.config;
+package com.jonathanmarquez.security.email_verification.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-
-import java.util.Properties;
 
 /**
  * Configuración para el servicio de correo electrónico.

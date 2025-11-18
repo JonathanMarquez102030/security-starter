@@ -1,5 +1,5 @@
 
-package com.jonathanmarquez.security.verification.model;
+package com.jonathanmarquez.security.email_verification.model;
 
 import com.jonathanmarquez.security.jpa.AuditableEntity;
 import jakarta.persistence.*;

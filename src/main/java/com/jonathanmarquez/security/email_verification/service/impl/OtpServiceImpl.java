@@ -1,13 +1,13 @@
 
-package com.jonathanmarquez.security.verification.service.impl;
+package com.jonathanmarquez.security.email_verification.service.impl;
 
-import com.jonathanmarquez.security.verification.config.OtpProperties;
-import com.jonathanmarquez.security.verification.dto.OtpResponseDto;
-import com.jonathanmarquez.security.verification.exception.*;
-import com.jonathanmarquez.security.verification.model.OtpToken;
-import com.jonathanmarquez.security.verification.repository.OtpTokenRepository;
-import com.jonathanmarquez.security.verification.service.EmailService;
-import com.jonathanmarquez.security.verification.service.OtpService;
+import com.jonathanmarquez.security.email_verification.config.OtpProperties;
+import com.jonathanmarquez.security.email_verification.dto.OtpResponseDto;
+import com.jonathanmarquez.security.email_verification.exception.*;
+import com.jonathanmarquez.security.email_verification.model.OtpToken;
+import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
+import com.jonathanmarquez.security.email_verification.service.EmailService;
+import com.jonathanmarquez.security.email_verification.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;

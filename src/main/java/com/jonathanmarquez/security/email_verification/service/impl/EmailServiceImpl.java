@@ -1,6 +1,6 @@
-package com.jonathanmarquez.security.verification.service.impl;
+package com.jonathanmarquez.security.email_verification.service.impl;
 
-import com.jonathanmarquez.security.verification.service.EmailService;
+import com.jonathanmarquez.security.email_verification.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

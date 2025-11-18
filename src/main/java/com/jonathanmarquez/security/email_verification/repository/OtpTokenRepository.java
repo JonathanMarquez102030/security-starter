@@ -1,6 +1,6 @@
-package com.jonathanmarquez.security.verification.repository;
+package com.jonathanmarquez.security.email_verification.repository;
 
-import com.jonathanmarquez.security.verification.model.OtpToken;
+import com.jonathanmarquez.security.email_verification.model.OtpToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

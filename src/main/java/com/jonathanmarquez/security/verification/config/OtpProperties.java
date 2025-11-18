@@ -33,4 +33,9 @@ public class OtpProperties {
    * Segundos de espera entre reenvíos de OTP.
    */
   private Long resendCooldownSeconds = 60L;
+
+  /**
+   * Horas después de las cuales una cuenta no verificada será eliminada.
+   */
+  private Integer unverifiedAccountExpirationHours = 24;
 }

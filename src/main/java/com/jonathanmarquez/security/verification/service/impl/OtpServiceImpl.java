@@ -10,6 +10,7 @@ import com.jonathanmarquez.security.verification.service.EmailService;
 import com.jonathanmarquez.security.verification.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementación del servicio de gestión de OTP.
@@ -30,6 +33,8 @@ public class OtpServiceImpl implements OtpService {
   private final EmailService emailService;
   private final OtpProperties otpProperties;
   private final SecureRandom secureRandom = new SecureRandom();
+  private final JdbcTemplate jdbcTemplate;
+
 
   @Override
   @Transactional
@@ -184,5 +189,81 @@ public class OtpServiceImpl implements OtpService {
   private Integer calculateRemainingMinutes(LocalDateTime expiresAt) {
     long minutesRemaining = ChronoUnit.MINUTES.between(LocalDateTime.now(), expiresAt);
     return Math.max(0, (int) minutesRemaining);
+  }
+
+  /**
+   * Tarea programada: Limpia cuentas no verificadas después del tiempo configurado.
+   * Se ejecuta cada 6 horas.
+   */
+  @Scheduled(cron = "0 0 */6 * * *")
+  @Transactional
+  public void cleanupUnverifiedAccounts() {
+    log.info("=== Iniciando limpieza de cuentas no verificadas ===");
+
+    try {
+      LocalDateTime threshold = LocalDateTime.now()
+                                             .minusHours(otpProperties.getUnverifiedAccountExpirationHours());
+
+      log.debug("Buscando cuentas creadas antes de: {}", threshold);
+
+      // Buscar usuarios no verificados con más del tiempo configurado
+      String sql = """
+          SELECT u.username, up.created_date
+          FROM users u
+          INNER JOIN user_profiles up ON u.username = up.email
+          WHERE u.enabled = false
+            AND up.created_date < ?
+          """;
+
+      List<Map<String, Object>> expiredAccounts = jdbcTemplate.queryForList(sql, threshold);
+
+      if (expiredAccounts.isEmpty()) {
+        log.info("No hay cuentas no verificadas para eliminar");
+        return;
+      }
+
+      log.info("Encontradas {} cuentas no verificadas para eliminar", expiredAccounts.size());
+
+      int deletedCount = 0;
+      for (Map<String, Object> account : expiredAccounts) {
+        String email = (String) account.get("username");
+        LocalDateTime createdDate = (LocalDateTime) account.get("created_date");
+
+        try {
+          deleteUnverifiedAccount(email);
+          deletedCount++;
+
+          long hoursOld = ChronoUnit.HOURS.between(createdDate, LocalDateTime.now());
+          log.info("✓ Cuenta eliminada: {} (creada hace {} horas)", email, hoursOld);
+
+        } catch (Exception e) {
+          log.error("✗ Error al eliminar cuenta {}: {}", email, e.getMessage());
+        }
+      }
+
+      log.info("=== Limpieza completada: {}/{} cuentas eliminadas ===",
+               deletedCount, expiredAccounts.size());
+
+    } catch (Exception e) {
+      log.error("Error crítico en limpieza de cuentas no verificadas", e);
+    }
+  }
+
+  /**
+   * Elimina una cuenta no verificada y todos sus datos relacionados.
+   */
+  private void deleteUnverifiedAccount(String email) {
+    // 1. Eliminar tokens OTP
+    otpTokenRepository.deleteAllByEmail(email);
+
+    // 2. Eliminar authorities/group_members
+    jdbcTemplate.update("DELETE FROM authorities WHERE username = ?", email);
+    jdbcTemplate.update("DELETE FROM group_members WHERE username = ?", email);
+
+    // 3. Eliminar perfil
+    jdbcTemplate.update("DELETE FROM user_profiles WHERE email = ?", email);
+
+    // 4. Eliminar usuario
+    jdbcTemplate.update("DELETE FROM users WHERE username = ?", email);
   }
 }

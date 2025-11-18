@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.security.service;
 
+import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.security.config.SecurityProperties;
 import com.jonathanmarquez.security.security.enums.AuthorizationMode;
 import com.jonathanmarquez.security.security.enums.Role;
@@ -9,10 +10,14 @@ import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
+import com.jonathanmarquez.security.verification.repository.OtpTokenRepository;
+import com.jonathanmarquez.security.verification.service.OtpService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +32,7 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserProfileServiceImpl implements UserProfileService {
 
   private final JdbcTemplate jdbcTemplate;
@@ -35,6 +41,8 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final UserDetailsService userDetailsService;
   private final SecurityProperties securityProperties;
   private final UserProfileMapper userProfileMapper;
+  private final OtpService otpService;
+  private final OtpTokenRepository otpTokenRepository;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
@@ -53,9 +61,30 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles) {
+
+    if (userExists(registerRequestDto.email())) {
+      throw new EmailAddressAlreadyExistsException(
+          String.format("El email '%s' ya está registrado", registerRequestDto.email())
+      );
+    }
+
     createUserCredentials(registerRequestDto.email(), registerRequestDto.password());
     assignAuthorities(registerRequestDto.email(), roles);
-    return createUserProfile(registerRequestDto.profile());
+
+    UserProfile profile = createUserProfile(registerRequestDto.profile());
+
+    // 5. NUEVO: Generar y enviar OTP
+//    try {
+//      otpService.generateAndSendOtp(registerRequestDto.email());
+//      log.info("OTP generado y enviado para: {}", registerRequestDto.email());
+//    } catch (Exception e) {
+//      log.error("Error al generar OTP para {}: {}", registerRequestDto.email(), e.getMessage());
+//      // Continuar con el registro aunque falle el envío de email
+//    }
+
+    log.info("Usuario creado exitosamente (pendiente de verificación): {}", registerRequestDto.email());
+
+    return profile;
   }
 
   @Override
@@ -100,19 +129,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     jdbcTemplate.update("DELETE FROM users WHERE username = ?", email);
   }
 
-  //TODO: implementar para desactivación o activación de usuarios, verificar usos practicos.
-  /**
-   * Habilita o deshabilita un usuario.
-   */
-  @Override
-  @Transactional
-  public void setEnabled(String email, boolean enabled) {
-    jdbcTemplate.update(
-        "UPDATE users SET enabled = ? WHERE username = ?",
-        enabled, email
-    );
-  }
-
   /**
    * Verifica si existe un usuario.
    */
@@ -132,10 +148,12 @@ public class UserProfileServiceImpl implements UserProfileService {
    */
   private void createUserCredentials(String email, String rawPassword) {
     String encodedPassword = passwordEncoder.encode(rawPassword);
+
     jdbcTemplate.update(
-        "INSERT INTO users (username, password, enabled) VALUES (?, ?, ?)",
-        email, encodedPassword, true
+        "INSERT INTO users (username, password, enabled) VALUES (?, ?, false)",
+        email, encodedPassword
     );
+    log.debug("Credenciales creadas para usuario: {} (enabled=false)", email);
   }
 
   /**
@@ -240,5 +258,32 @@ public class UserProfileServiceImpl implements UserProfileService {
   private UserProfile createUserProfile(UserProfileDto userProfileDto) {
     UserProfile profile = userProfileMapper.toUserProfile(userProfileDto);
     return userProfileRepository.save(profile);
+  }
+
+  /**
+   * Habilita o deshabilita un usuario.
+   * MODIFICADO: Eliminar OTP al habilitar
+   */
+  @Override
+  @Transactional
+  public void setEnabled(String email, boolean enabled) {
+    String sql = "UPDATE users SET enabled = ? WHERE username = ?";
+    int updated = jdbcTemplate.update(sql, enabled, email);
+
+    if (updated == 0) {
+      throw new UsernameNotFoundException("Usuario no encontrado: " + email);
+    }
+
+    // NUEVO: Si se habilita el usuario, eliminar todos sus OTP
+    if (enabled) {
+      try {
+        otpTokenRepository.deleteAllByEmail(email);
+        log.info("Tokens OTP eliminados para usuario: {}", email);
+      } catch (Exception e) {
+        log.error("Error al eliminar OTP para {}: {}", email, e.getMessage());
+      }
+    }
+
+    log.info("Usuario {} {}", email, enabled ? "habilitado" : "deshabilitado");
   }
 }

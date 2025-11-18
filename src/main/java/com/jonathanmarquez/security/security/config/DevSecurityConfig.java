@@ -121,6 +121,8 @@ public class DevSecurityConfig {
             "/api/auth/csrf",
             "/api/auth/refresh",
             "/api/auth/public/**",
+            "/api/auth/verify",
+            "/api/auth/resend-otp",
             "/error",
             "/api/test/**"
         ).permitAll()

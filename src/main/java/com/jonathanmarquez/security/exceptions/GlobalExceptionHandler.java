@@ -7,6 +7,11 @@ import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundExce
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
+import com.jonathanmarquez.security.verification.exception.InvalidOtpException;
+import com.jonathanmarquez.security.verification.exception.OtpExpiredException;
+import com.jonathanmarquez.security.verification.exception.OtpMaxAttemptsException;
+import com.jonathanmarquez.security.verification.exception.ResendCooldownException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;
@@ -458,6 +463,101 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         buildUserFriendlyMessage(ex, status),
         getPath(request),
         errorDetails
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  // ================================================================================================================
+  // Métodos específicos para excepciones de verificación de correo
+  // ================================================================================================================
+
+
+  /**
+   * Maneja excepciones de OTP inválido.
+   */
+  @ExceptionHandler(InvalidOtpException.class)
+  public ResponseEntity<ErrorApiResponse> handleInvalidOtpException(
+      InvalidOtpException ex,
+      WebRequest request
+  ) {
+    log.warn("OTP inválido: {}", ex.getMessage());
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        ex.getMessage(),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja excepciones de OTP expirado.
+   */
+  @ExceptionHandler(OtpExpiredException.class)
+  public ResponseEntity<ErrorApiResponse> handleOtpExpiredException(
+      OtpExpiredException ex,
+      WebRequest request
+  ) {
+    log.warn("OTP expirado: {}", ex.getMessage());
+    HttpStatus status = HttpStatus.GONE;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        ex.getMessage(),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja excepciones de máximo de intentos alcanzado.
+   */
+  @ExceptionHandler(OtpMaxAttemptsException.class)
+  public ResponseEntity<ErrorApiResponse> handleOtpMaxAttemptsException(
+      OtpMaxAttemptsException ex,
+      WebRequest request
+  ) {
+    log.warn("Máximo de intentos OTP alcanzado: {}", ex.getMessage());
+
+    HttpStatus status = HttpStatus.GONE;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        ex.getMessage(),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(status).body(response);
+  }
+
+  /**
+   * Maneja excepciones de cooldown de reenvío.
+   */
+  @ExceptionHandler(ResendCooldownException.class)
+  public ResponseEntity<ErrorApiResponse> handleResendCooldownException(
+      ResendCooldownException ex,
+      WebRequest request
+  ) {
+    log.warn("Cooldown de reenvío activo: {}", ex.getMessage());
+
+    HttpStatus status = HttpStatus.GONE;
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        status,
+        ex.getMessage(),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
     );
 
     return ResponseEntity.status(status).body(response);

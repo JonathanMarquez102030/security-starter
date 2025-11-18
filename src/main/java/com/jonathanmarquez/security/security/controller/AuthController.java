@@ -14,6 +14,7 @@ import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
+import com.jonathanmarquez.security.verification.service.OtpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -61,6 +62,7 @@ public class AuthController {
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
   private final UserProfileMapper userProfileMapper;
+  private final OtpService otpService; // AGREGAR ESTA LÍNEA
 
   /**
    * Autentica a un usuario mediante credenciales Basic Auth.
@@ -132,6 +134,16 @@ public class AuthController {
     }
 
     UserProfile userProfile = userProfileService.createUser(registerRequest, List.of(Role.ROLE_USER));
+
+    // 2. Enviar OTP en operación separada (no afecta transacción principal)
+    try {
+      otpService.generateAndSendOtp(registerRequest.email());
+      log.info("OTP generado y enviado para: {}", registerRequest.email());
+    } catch (Exception e) {
+      log.error("Error al generar/enviar OTP para {}: {}", registerRequest.email(), e.getMessage(), e);
+      // El usuario ya está creado, solo falló el envío del email
+      // Se puede reenviar después
+    }
 
     UserProfileDto userProfileDto = userProfileMapper.toUserProfileDto(userProfile);
 

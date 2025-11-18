@@ -65,7 +65,7 @@ public class OtpServiceImpl implements OtpService {
   }
 
   @Override
-  @Transactional
+  @Transactional(noRollbackFor = InvalidOtpException.class)
   public boolean verifyOtp(String email, String code) {
     log.info("Verificando OTP para email: {}", email);
 
@@ -88,7 +88,7 @@ public class OtpServiceImpl implements OtpService {
 
     // Incrementar intentos
     otpToken.incrementAttempts();
-    otpTokenRepository.save(otpToken);
+    otpTokenRepository.saveAndFlush(otpToken);
 
     // Verificar código
     if (!otpToken.getCode().equals(code)) {

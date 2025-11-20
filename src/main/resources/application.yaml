@@ -22,7 +22,9 @@ spring:
           protocol: smtp
     default-encoding: UTF-8
 
-# OTP Configuration
+# ===========================
+# Configuración de OTP para email verification
+# ===========================
 otp:
   length: 6
   expiration-minutes: 5

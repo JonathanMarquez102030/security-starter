@@ -31,19 +31,22 @@ spring:
           writetimeout: 5000
         debug: true
 
-# OTP Configuration for Development
-otp:
-  length: 6
-  expiration-minutes: 5
-  max-attempts: 5
-  resend-cooldown-seconds: 60
-
   sql:
     init:
       mode: always
       schema-locations: classpath:db/security/01-security-schema.sql
       data-locations: classpath:db/security/02-security-data.sql
       continue-on-error: false
+
+
+# ===========================
+# Configuración de OTP en desarrollo
+# ===========================
+otp:
+  length: 6
+  expiration-minutes: 5
+  max-attempts: 5
+  resend-cooldown-seconds: 60
 
 logging:
   level:

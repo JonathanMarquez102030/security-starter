@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   postgres:
@@ -14,6 +13,7 @@ services:
       - postgres-security-template-data:/var/lib/postgresql/data
     networks:
       - security-template-network
+    restart: unless-stopped
 
 volumes:
   postgres-security-template-data:

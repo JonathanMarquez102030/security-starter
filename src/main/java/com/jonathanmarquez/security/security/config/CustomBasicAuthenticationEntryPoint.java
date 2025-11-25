@@ -124,3 +124,4 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
     return "authentication_failed";
   }
 }
+

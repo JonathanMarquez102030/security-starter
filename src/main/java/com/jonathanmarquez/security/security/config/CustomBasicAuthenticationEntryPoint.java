@@ -2,6 +2,7 @@ package com.jonathanmarquez.security.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jonathanmarquez.security.email_verification.exception.EmailNotVerifiedException;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
@@ -13,7 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
@@ -55,6 +58,18 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
 
   private String determineErrorMessage(AuthenticationException authException) {
     // Verificar si es por credenciales incorrectas
+
+    if (authException instanceof InternalAuthenticationServiceException) {
+      if (authException.getCause() instanceof EmailNotVerifiedException) {
+        return authException.getCause().getMessage();
+      }
+      return authException.getMessage();
+    }
+
+    if(authException instanceof DisabledException) {
+      return "Usuario deshabilitado, contacte con el administrador.";
+    }
+
     if (authException instanceof BadCredentialsException) {
       return "Credenciales inválidas. Usuario o contraseña incorrectos";
     }
@@ -95,6 +110,13 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
   }
 
   private String determineErrorReason(AuthenticationException authException) {
+
+    if (authException instanceof InternalAuthenticationServiceException) {
+      if (authException.getCause() instanceof EmailNotVerifiedException) {
+        return "email_not_verified";
+      }
+    }
+
     if (authException instanceof BadCredentialsException) {
       return "invalid_credentials";
     }

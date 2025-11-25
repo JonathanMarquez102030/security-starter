@@ -74,4 +74,8 @@ public class SecurityUserDetails implements UserDetails {
             profile.getLastName() != null ? profile.getLastName() : ""
         ).trim();
     }
+
+  public boolean isEmailVerified() {
+    return profile != null && profile.isEmailVerified();
+  }
 }

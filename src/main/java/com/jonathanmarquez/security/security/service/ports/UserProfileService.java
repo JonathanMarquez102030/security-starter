@@ -22,4 +22,6 @@ public interface UserProfileService {
   void setEnabled(String email, boolean enabled);
 
   boolean userExists(String email);
+
+  void setEmailVerified(String email, boolean verified);
 }

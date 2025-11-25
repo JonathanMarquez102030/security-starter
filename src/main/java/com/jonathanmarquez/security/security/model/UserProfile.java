@@ -43,4 +43,7 @@ public class UserProfile extends AuditableEntity {
 
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
+
+    @Column(name = "is_email_verified", nullable = false)
+    private boolean isEmailVerified;
 }

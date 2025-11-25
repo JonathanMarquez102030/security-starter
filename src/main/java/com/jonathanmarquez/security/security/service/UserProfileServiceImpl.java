@@ -1,5 +1,7 @@
 package com.jonathanmarquez.security.security.service;
 
+import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
+import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.security.config.SecurityProperties;
 import com.jonathanmarquez.security.security.enums.AuthorizationMode;
@@ -10,8 +12,6 @@ import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.ports.UserProfileService;
-import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
-import com.jonathanmarquez.security.email_verification.service.OtpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Servicio para gestionar usuarios completos:
@@ -72,15 +73,6 @@ public class UserProfileServiceImpl implements UserProfileService {
     assignAuthorities(registerRequestDto.email(), roles);
 
     UserProfile profile = createUserProfile(registerRequestDto.profile());
-
-    // 5. NUEVO: Generar y enviar OTP
-//    try {
-//      otpService.generateAndSendOtp(registerRequestDto.email());
-//      log.info("OTP generado y enviado para: {}", registerRequestDto.email());
-//    } catch (Exception e) {
-//      log.error("Error al generar OTP para {}: {}", registerRequestDto.email(), e.getMessage());
-//      // Continuar con el registro aunque falle el envío de email
-//    }
 
     log.info("Usuario creado exitosamente (pendiente de verificación): {}", registerRequestDto.email());
 
@@ -257,6 +249,7 @@ public class UserProfileServiceImpl implements UserProfileService {
    */
   private UserProfile createUserProfile(UserProfileDto userProfileDto) {
     UserProfile profile = userProfileMapper.toUserProfile(userProfileDto);
+    profile.setEmailVerified(false);
     return userProfileRepository.save(profile);
   }
 
@@ -274,16 +267,35 @@ public class UserProfileServiceImpl implements UserProfileService {
       throw new UsernameNotFoundException("Usuario no encontrado: " + email);
     }
 
-    // NUEVO: Si se habilita el usuario, eliminar todos sus OTP
-    if (enabled) {
-      try {
-        otpTokenRepository.deleteAllByEmail(email);
-        log.info("Tokens OTP eliminados para usuario: {}", email);
-      } catch (Exception e) {
-        log.error("Error al eliminar OTP para {}: {}", email, e.getMessage());
-      }
-    }
-
     log.info("Usuario {} {}", email, enabled ? "habilitado" : "deshabilitado");
+  }
+
+  /**
+   * establece un email verificado o no
+   */
+  @Transactional
+  public void setEmailVerified(String email, boolean verified) {
+    setEnabled(email, verified);
+
+    Optional<UserProfile> userProfile = userProfileRepository.findByEmail(email);
+
+    userProfile.ifPresentOrElse(
+        profile -> {
+          profile.setEmailVerified(verified);
+          userProfileRepository.save(profile);
+
+          if (verified) {
+            try {
+              otpService.deleteAllOtpsByEmail(email);
+              log.info("Tokens OTP eliminados para usuario: {}", email);
+            } catch (Exception e) {
+              log.error("Error al eliminar OTP para {}: {}", email, e.getMessage());
+            }
+          }
+        },
+        () -> {
+          throw new UsernameNotFoundException("Usuario no encontrado: " + email);
+        }
+    );
   }
 }

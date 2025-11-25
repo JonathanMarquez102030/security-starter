@@ -1,10 +1,12 @@
 package com.jonathanmarquez.security.security.config;
 
+import com.jonathanmarquez.security.email_verification.exception.EmailNotVerifiedException;
 import com.jonathanmarquez.security.security.enums.AuthorizationMode;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,6 +20,7 @@ import java.util.List;
  * 1. Datos de autenticación desde las tablas de Spring Security (users, authorities/groups)
  * 2. Datos de perfil extendidos desde user_profiles (JPA)
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -54,6 +57,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // 3. Cargar perfil extendido (opcional)
     UserProfile profile = userProfileRepository.findById(dbUsername).orElse(null);
+
+    if (!enabled && profile != null && !profile.isEmailVerified()) {
+      log.warn("Intento de login con email no verificado: {}", username);
+      throw new EmailNotVerifiedException();
+    }
 
     // 4. Construir SecurityUser
     return new SecurityUserDetails(dbUsername, password, enabled, authorities, profile);

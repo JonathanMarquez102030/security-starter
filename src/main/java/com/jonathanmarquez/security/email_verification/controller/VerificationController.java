@@ -51,10 +51,7 @@ public class VerificationController {
     otpService.verifyOtp(request.email(), request.code());
 
     // Habilitar usuario
-    userProfileService.setEnabled(request.email(), true);
-
-    // Eliminar todos los OTP del usuario
-    otpService.deleteAllOtpsByEmail(request.email());
+    userProfileService.setEmailVerified(request.email(), true);
 
     // Enviar email de bienvenida
     userProfileRepository.findByEmail(request.email()).ifPresent(profile ->

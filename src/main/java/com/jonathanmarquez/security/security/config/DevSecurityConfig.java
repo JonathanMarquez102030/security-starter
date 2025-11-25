@@ -98,11 +98,14 @@ public class DevSecurityConfig {
     http.csrf(csrf -> csrf
         .csrfTokenRequestHandler(csrfHandler)
         .ignoringRequestMatchers(
-            "/api/auth/login",
             "/api/auth/register",
-            "/api/auth/refresh",
             "/api/auth/csrf",
-            "/api/auth/logout"
+            "/api/auth/refresh",
+            "/api/auth/public/**",
+            "/api/auth/login",
+            "/api/auth/logout",
+            "/api/auth/verify",
+            "/api/auth/resend-otp"
         )
         .csrfTokenRepository(tokenRepository)
     );

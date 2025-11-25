@@ -11,7 +11,7 @@ import com.jonathanmarquez.security.security.model.dto.AuthResponseDto;
 import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
 import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
-import com.jonathanmarquez.security.security.service.ports.UserProfileService;
+import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
 import com.jonathanmarquez.security.email_verification.service.OtpService;

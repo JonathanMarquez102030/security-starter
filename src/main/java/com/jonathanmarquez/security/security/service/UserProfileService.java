@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.security.service.ports;
+package com.jonathanmarquez.security.security.service;
 
 import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.UserProfile;

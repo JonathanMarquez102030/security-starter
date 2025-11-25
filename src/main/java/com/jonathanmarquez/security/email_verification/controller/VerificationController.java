@@ -5,7 +5,7 @@ import com.jonathanmarquez.security.email_verification.dto.OtpResponseDto;
 import com.jonathanmarquez.security.email_verification.dto.ResendOtpRequestDto;
 import com.jonathanmarquez.security.email_verification.dto.VerifyOtpRequestDto;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
-import com.jonathanmarquez.security.security.service.ports.UserProfileService;
+import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.email_verification.service.EmailService;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import jakarta.servlet.http.HttpServletRequest;

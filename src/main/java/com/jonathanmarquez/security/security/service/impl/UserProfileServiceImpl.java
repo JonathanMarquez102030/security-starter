@@ -1,4 +1,4 @@
-package com.jonathanmarquez.security.security.service;
+package com.jonathanmarquez.security.security.service.impl;
 
 import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
@@ -11,7 +11,7 @@ import com.jonathanmarquez.security.security.model.dto.RegisterRequestDto;
 import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
-import com.jonathanmarquez.security.security.service.ports.UserProfileService;
+import com.jonathanmarquez.security.security.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;

@@ -6,9 +6,6 @@ import com.jonathanmarquez.security.email_verification.exception.EmailNotVerifie
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +32,12 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
 
     HttpStatus status = HttpStatus.UNAUTHORIZED;
     String path = request.getRequestURI();
-//    String message = "Credenciales inválidas, token caducado o token no válido";
-    String message = determineErrorMessage(authException);
-    String errorReason = determineErrorReason(authException);
+    ErrorInfo errorInfo = determineErrorInfo(authException);
 
-                                                  ErrorApiResponse errorResponse = ErrorApiResponse.builder()
+
+    ErrorApiResponse errorResponse = ErrorApiResponse.builder()
                                                      .success(false)
-                                                     .message(message)
+                                                     .message(errorInfo.message())
                                                      .status(status.getReasonPhrase().toLowerCase())
                                                      .statusCode(status.value())
                                                      .timestamp(LocalDateTime.now())
@@ -50,100 +46,35 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
                                                      .build();
 
 
-    response.setHeader("error-reason", errorReason);
+    response.setHeader("error-reason", errorInfo.reason());
     response.setStatus(status.value());
     response.setContentType("application/json;charset=UTF-8");
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }
 
-  private String determineErrorMessage(AuthenticationException authException) {
-    // Verificar si es por credenciales incorrectas
-
+  private ErrorInfo determineErrorInfo(AuthenticationException authException) {
     if (authException instanceof InternalAuthenticationServiceException) {
       if (authException.getCause() instanceof EmailNotVerifiedException) {
-        return authException.getCause().getMessage();
+        return new ErrorInfo(authException.getCause().getMessage(), "email_not_verified");
       }
-      return authException.getMessage();
+      return new ErrorInfo(authException.getMessage(), "authentication_failed");
     }
 
-    if(authException instanceof DisabledException) {
-      return "Usuario deshabilitado, contacte con el administrador.";
+    if (authException instanceof DisabledException) {
+      return new ErrorInfo("Usuario deshabilitado, contacte con el administrador.", "user_disabled");
     }
 
     if (authException instanceof BadCredentialsException) {
-      return "Credenciales inválidas. Usuario o contraseña incorrectos";
-    }
-
-    // Verificar causas relacionadas con JWT
-    Throwable cause = authException.getCause();
-
-    if (cause instanceof ExpiredJwtException) {
-      return "Token expirado. Por favor, inicie sesión nuevamente";
-    }
-
-    if (cause instanceof SignatureException) {
-      return "Token inválido. Firma no válida";
-    }
-
-    if (cause instanceof MalformedJwtException) {
-      return "Token malformado. Formato no válido";
-    }
-
-    // Verificar por tipo de excepción de autenticación insuficiente
-    if (authException instanceof InsufficientAuthenticationException) {
-      String exceptionMessage = authException.getMessage();
-
-      if (exceptionMessage != null) {
-        if (exceptionMessage.contains("expired")) {
-          return "Token expirado. Por favor, inicie sesión nuevamente";
-        }
-        if (exceptionMessage.contains("invalid") || exceptionMessage.contains("malformed")) {
-          return "Token inválido o malformado";
-        }
-      }
-
-      return "Autenticación insuficiente. inicie sesión nuevamente";
-    }
-
-    // Mensaje genérico si no se puede determinar el tipo específico
-    return "Error de autenticación. Credenciales inválidas, token caducado o token no válido";
-  }
-
-  private String determineErrorReason(AuthenticationException authException) {
-
-    if (authException instanceof InternalAuthenticationServiceException) {
-      if (authException.getCause() instanceof EmailNotVerifiedException) {
-        return "email_not_verified";
-      }
-    }
-
-    if (authException instanceof BadCredentialsException) {
-      return "invalid_credentials";
-    }
-
-    Throwable cause = authException.getCause();
-
-    if (cause instanceof ExpiredJwtException) {
-      return "token_expired";
-    }
-
-    if (cause instanceof SignatureException) {
-      return "invalid_token_signature";
-    }
-
-    if (cause instanceof MalformedJwtException) {
-      return "malformed_token";
+      return new ErrorInfo("Credenciales inválidas. Usuario o contraseña incorrectos", "invalid_credentials");
     }
 
     if (authException instanceof InsufficientAuthenticationException) {
-      String exceptionMessage = authException.getMessage();
-      if (exceptionMessage != null && exceptionMessage.contains("expired")) {
-        return "token_expired";
-      }
-      return "insufficient_authentication";
+      return new ErrorInfo("Autenticación insuficiente. inicie sesión nuevamente", "insufficient_authentication");
     }
 
-    return "authentication_failed";
+    return new ErrorInfo("Error de autenticación.", "authentication_failed");
   }
+
+  private record ErrorInfo(String message, String reason) {}
 }
 

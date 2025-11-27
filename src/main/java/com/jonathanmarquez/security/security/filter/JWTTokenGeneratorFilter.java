@@ -53,8 +53,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
       // También en header para compatibilidad (opcional)
       response.setHeader("Authorization", "Bearer " + accessToken);
       log.info("Tokens JWT generados y almacenados en cookies para: {}", authentication.getName());
-    }
-    else{
+    } else {
       log.warn("No se generaron tokens JWT - Usuario no autenticado en: {}", request.getServletPath());
     }
     // Continúa con la cadena de filtros

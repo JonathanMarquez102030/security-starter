@@ -1,4 +1,3 @@
-
 package com.jonathanmarquez.security.email_verification.dto;
 
 import jakarta.validation.constraints.Email;

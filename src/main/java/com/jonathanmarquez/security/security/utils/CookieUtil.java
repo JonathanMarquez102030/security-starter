@@ -12,11 +12,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class CookieUtil {
 
-  @Autowired
-  private Environment env;
-
   private static final String ACCESS_TOKEN_COOKIE = "accessToken";
   private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
+  @Autowired
+  private Environment env;
 
   /**
    * Crea una cookie segura para el Access Token.
@@ -31,7 +30,8 @@ public class CookieUtil {
    * Crea una cookie segura para el Refresh Token.
    */
   public void createRefreshTokenCookie(HttpServletResponse response, String token) {
-    int maxAge = Integer.parseInt(env.getProperty("jwt.refresh.expiration", "604800000")) / 1000; // convertir a segundos
+    int maxAge = Integer.parseInt(
+        env.getProperty("jwt.refresh.expiration", "604800000")) / 1000; // convertir a segundos
     log.debug("Creando refreshToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, REFRESH_TOKEN_COOKIE, token, maxAge);
   }

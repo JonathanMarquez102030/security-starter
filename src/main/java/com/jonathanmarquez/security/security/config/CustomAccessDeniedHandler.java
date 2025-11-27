@@ -35,8 +35,10 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                                                      .statusCode(status.value())
                                                      .timestamp(LocalDateTime.now())
                                                      .path(path)
-                                                     .details(ErrorApiResponseHelper.buildDetails(profileDetector, accessDeniedException, null))
-                                                                                    .build();
+                                                     .details(ErrorApiResponseHelper.buildDetails(profileDetector,
+                                                                                                  accessDeniedException,
+                                                                                                  null))
+                                                     .build();
 
     response.setHeader("denied-reason", "Authorization failed");
     response.setStatus(status.value());

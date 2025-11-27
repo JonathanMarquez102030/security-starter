@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
  * @since 2025-01
  */
 public class InvalidRefreshTokenException extends RuntimeException implements CustomErrorResponse {
-  
+
   private static final String DEFAULT_MESSAGE = "Refresh token inválido o expirado";
 
   /**
@@ -36,7 +36,7 @@ public class InvalidRefreshTokenException extends RuntimeException implements Cu
    * Construye una nueva excepción con el mensaje y causa especificados.
    *
    * @param message mensaje de error personalizado
-   * @param cause causa raíz de la excepción
+   * @param cause   causa raíz de la excepción
    */
   public InvalidRefreshTokenException(String message, Throwable cause) {
     super(message, cause);

@@ -1,4 +1,3 @@
-
 package com.jonathanmarquez.security.email_verification.service.impl;
 
 import com.jonathanmarquez.security.email_verification.config.OtpProperties;
@@ -48,13 +47,13 @@ public class OtpServiceImpl implements OtpService {
 
     // Crear y guardar token
     OtpToken otpToken = OtpToken.builder()
-        .email(email)
-        .code(otpCode)
-        .attempts(0)
-        .expiresAt(expiresAt)
-        .lastSentAt(now)
-        .verified(false)
-        .build();
+                                .email(email)
+                                .code(otpCode)
+                                .attempts(0)
+                                .expiresAt(expiresAt)
+                                .lastSentAt(now)
+                                .verified(false)
+                                .build();
 
     otpTokenRepository.save(otpToken);
     log.debug("OTP generado y guardado para email: {}", email);
@@ -63,10 +62,10 @@ public class OtpServiceImpl implements OtpService {
     emailService.sendOtpEmail(email, otpCode, otpProperties.getExpirationMinutes());
 
     return OtpResponseDto.builder()
-        .email(email)
-        .message("Código OTP enviado exitosamente")
-        .expirationMinutes(otpProperties.getExpirationMinutes())
-        .build();
+                         .email(email)
+                         .message("Código OTP enviado exitosamente")
+                         .expirationMinutes(otpProperties.getExpirationMinutes())
+                         .build();
   }
 
   @Override
@@ -98,10 +97,10 @@ public class OtpServiceImpl implements OtpService {
     // Verificar código
     if (!otpToken.getCode().equals(code)) {
       log.warn("Código OTP inválido para email: {} (intento {}/{})",
-          email, otpToken.getAttempts(), otpProperties.getMaxAttempts());
+               email, otpToken.getAttempts(), otpProperties.getMaxAttempts());
       throw new InvalidOtpException(
           String.format("Código inválido. Intentos restantes: %d",
-              otpProperties.getMaxAttempts() - otpToken.getAttempts())
+                        otpProperties.getMaxAttempts() - otpToken.getAttempts())
       );
     }
 
@@ -131,27 +130,27 @@ public class OtpServiceImpl implements OtpService {
       if (secondsSinceLastSent < otpProperties.getResendCooldownSeconds()) {
         long secondsRemaining = otpProperties.getResendCooldownSeconds() - secondsSinceLastSent;
         log.warn("Intento de reenvío antes del cooldown para email: {} ({} segundos restantes)",
-            email, secondsRemaining);
+                 email, secondsRemaining);
         throw new ResendCooldownException(secondsRemaining);
       }
 
       // Si no expiró y no alcanzó max intentos, reenviar el mismo código
-      if (!existingOtp.isExpired() && 
+      if (!existingOtp.isExpired() &&
           !existingOtp.hasReachedMaxAttempts(otpProperties.getMaxAttempts())) {
-        
+
         existingOtp.setLastSentAt(now);
         otpTokenRepository.save(existingOtp);
 
-        emailService.sendOtpEmail(email, existingOtp.getCode(), 
-            calculateRemainingMinutes(existingOtp.getExpiresAt()));
+        emailService.sendOtpEmail(email, existingOtp.getCode(),
+                                  calculateRemainingMinutes(existingOtp.getExpiresAt()));
 
         log.info("OTP reenviado (mismo código) para email: {}", email);
-        
+
         return OtpResponseDto.builder()
-            .email(email)
-            .message("Código OTP reenviado exitosamente")
-            .expirationMinutes(calculateRemainingMinutes(existingOtp.getExpiresAt()))
-            .build();
+                             .email(email)
+                             .message("Código OTP reenviado exitosamente")
+                             .expirationMinutes(calculateRemainingMinutes(existingOtp.getExpiresAt()))
+                             .build();
       }
     }
 

@@ -112,7 +112,8 @@ public class DevSecurityConfig {
   }
 
   private void configureCustomFilters(HttpSecurity http) {
-    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService), BasicAuthenticationFilter.class);
+    http.addFilterBefore(new JWTTokenValidatorFilter(jwtUtil, cookieUtil, userDetailsService),
+                         BasicAuthenticationFilter.class);
     http.addFilterAfter(new JWTTokenGeneratorFilter(jwtUtil, cookieUtil), BasicAuthenticationFilter.class);
     http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
   }
@@ -129,7 +130,7 @@ public class DevSecurityConfig {
             "/error",
             "/api/test/**"
         ).permitAll()
-        .requestMatchers("/api/auth/login", "/api/auth/me",  "/api/auth/logout").authenticated()
+        .requestMatchers("/api/auth/login", "/api/auth/me", "/api/auth/logout").authenticated()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
         .anyRequest().authenticated()

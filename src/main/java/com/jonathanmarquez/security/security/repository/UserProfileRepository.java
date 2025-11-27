@@ -12,13 +12,13 @@ import java.util.Optional;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, String> {
 
-    /**
-     * Busca un perfil de usuario por email.
-     */
-    Optional<UserProfile> findByEmail(String email);
+  /**
+   * Busca un perfil de usuario por email.
+   */
+  Optional<UserProfile> findByEmail(String email);
 
-    /**
-     * Verifica si existe un perfil con el email especificado.
-     */
-    boolean existsByEmail(String email);
+  /**
+   * Verifica si existe un perfil con el email especificado.
+   */
+  boolean existsByEmail(String email);
 }

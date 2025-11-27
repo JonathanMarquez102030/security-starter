@@ -1,16 +1,16 @@
 package com.jonathanmarquez.security.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jonathanmarquez.security.email_verification.exception.InvalidOtpException;
+import com.jonathanmarquez.security.email_verification.exception.OtpExpiredException;
+import com.jonathanmarquez.security.email_verification.exception.OtpMaxAttemptsException;
+import com.jonathanmarquez.security.email_verification.exception.ResendCooldownException;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundException;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
-import com.jonathanmarquez.security.email_verification.exception.InvalidOtpException;
-import com.jonathanmarquez.security.email_verification.exception.OtpExpiredException;
-import com.jonathanmarquez.security.email_verification.exception.OtpMaxAttemptsException;
-import com.jonathanmarquez.security.email_verification.exception.ResendCooldownException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;

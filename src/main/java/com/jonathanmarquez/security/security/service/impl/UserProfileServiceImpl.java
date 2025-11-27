@@ -56,7 +56,7 @@ public class UserProfileServiceImpl implements UserProfileService {
    * </p>
    *
    * @param registerRequestDto datos del usuario a crear
-   * @param roles lista de authorities/roles a asignar (ej: ["ROLE_USER"])
+   * @param roles              lista de authorities/roles a asignar (ej: ["ROLE_USER"])
    * @return el perfil creado
    */
   @Override
@@ -94,6 +94,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   }
 
   //TODO: Implementar con mejor seguridad, con validación de correo electrónico. y con buenas practicas de seguridad.
+
   /**
    * Actualiza la contraseña del usuario.
    */
@@ -108,6 +109,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   }
 
   //TODO: Implementar cuando este mas estandarizado y con buenas practicas de seguridad para confirmar.
+
   /**
    * Elimina completamente un usuario (con cascada a perfil y authorities).
    */

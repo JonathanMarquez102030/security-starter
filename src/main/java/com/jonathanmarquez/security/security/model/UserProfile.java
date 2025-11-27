@@ -29,21 +29,21 @@ public class UserProfile extends AuditableEntity {
   private String email; // FK a users.username
 
   @Column(name = "first_name", length = 100, nullable = false)
-    private String firstName;
+  private String firstName;
 
-  @Column(name = "last_name", length = 100,  nullable = false)
-    private String lastName;
+  @Column(name = "last_name", length = 100, nullable = false)
+  private String lastName;
 
 
-    @Column(name = "phone", length = 20)
-    private String phone;
+  @Column(name = "phone", length = 20)
+  private String phone;
 
-    @Column(name = "profile_picture_url", length = 500)
-    private String profilePictureUrl;
+  @Column(name = "profile_picture_url", length = 500)
+  private String profilePictureUrl;
 
-    @Column(name = "date_of_birth", nullable = false)
-    private LocalDate dateOfBirth;
+  @Column(name = "date_of_birth", nullable = false)
+  private LocalDate dateOfBirth;
 
-    @Column(name = "is_email_verified", nullable = false)
-    private boolean isEmailVerified;
+  @Column(name = "is_email_verified", nullable = false)
+  private boolean isEmailVerified;
 }

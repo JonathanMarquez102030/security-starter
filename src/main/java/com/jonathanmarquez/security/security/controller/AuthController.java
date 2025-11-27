@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.security.controller;
 
+import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.exceptions.customexceptions.InvalidRefreshTokenException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
@@ -14,7 +15,6 @@ import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
-import com.jonathanmarquez.security.email_verification.service.OtpService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;

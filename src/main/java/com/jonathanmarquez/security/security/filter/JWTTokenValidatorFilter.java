@@ -72,8 +72,9 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
           log.warn("JWT inválido o expirado");
         }
       } catch (Exception e) {
-        log.error("Error validando JWT: {}", e.getMessage());}
-    }else{
+        log.error("Error validando JWT: {}", e.getMessage());
+      }
+    } else {
       log.debug("No se encontró JWT en cookies ni headers para: {}", request.getServletPath());
     }
 

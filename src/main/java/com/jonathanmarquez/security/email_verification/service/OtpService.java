@@ -19,7 +19,7 @@ public interface OtpService {
    * Verifica un código OTP.
    *
    * @param email email del usuario
-   * @param code código OTP a verificar
+   * @param code  código OTP a verificar
    * @return true si la verificación es exitosa
    */
   boolean verifyOtp(String email, String code);

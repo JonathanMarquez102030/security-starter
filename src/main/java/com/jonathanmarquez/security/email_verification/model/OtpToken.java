@@ -1,4 +1,3 @@
-
 package com.jonathanmarquez.security.email_verification.model;
 
 import com.jonathanmarquez.security.jpa.AuditableEntity;

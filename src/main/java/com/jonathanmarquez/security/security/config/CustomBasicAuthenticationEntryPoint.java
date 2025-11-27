@@ -42,7 +42,8 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
                                                      .statusCode(status.value())
                                                      .timestamp(LocalDateTime.now())
                                                      .path(path)
-                                                     .details(ErrorApiResponseHelper.buildDetails(profileDetector, authException, null))
+                                                     .details(ErrorApiResponseHelper.buildDetails(profileDetector,
+                                                                                                  authException, null))
                                                      .build();
 
 
@@ -75,6 +76,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
     return new ErrorInfo("Error de autenticación.", "authentication_failed");
   }
 
-  private record ErrorInfo(String message, String reason) {}
+  private record ErrorInfo(String message, String reason) {
+  }
 }
 

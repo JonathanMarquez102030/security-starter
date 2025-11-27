@@ -27,18 +27,23 @@ public record RegisterRequestDto(
   public String email() {
     return this.profile.email();
   }
+
   public String firstName() {
     return this.profile.firstName();
   }
+
   public String lastName() {
     return this.profile.lastName();
   }
+
   public String phone() {
     return this.profile.phone();
   }
+
   public String profilePictureUrl() {
     return this.profile.profilePictureUrl();
   }
+
   public LocalDate dateOfBirth() {
     return this.profile.dateOfBirth();
   }

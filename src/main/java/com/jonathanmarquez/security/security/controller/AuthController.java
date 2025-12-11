@@ -4,6 +4,7 @@ import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.exceptions.customexceptions.InvalidRefreshTokenException;
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
+import com.jonathanmarquez.security.exceptions.response.ApiResponseFactory;
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
 import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
@@ -15,12 +16,12 @@ import com.jonathanmarquez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.CookieUtil;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
+import com.jonathanmarquez.security.utils.ResponseMessages;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -29,7 +30,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -62,7 +62,8 @@ public class AuthController {
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
   private final UserProfileMapper userProfileMapper;
-  private final OtpService otpService; // AGREGAR ESTA LÍNEA
+  private final OtpService otpService;
+  private final ApiResponseFactory apiResponseFactory;
 
   /**
    * Autentica a un usuario mediante credenciales Basic Auth.
@@ -78,14 +79,12 @@ public class AuthController {
    * </ul>
    *
    * @param authentication objeto de autenticación proporcionado por Spring Security
-   * @param request        solicitud HTTP para obtener información de contexto
    * @return ResponseEntity con datos del usuario autenticado en formato estandarizado
    * @throws UserNotAuthenticatedException si el usuario no está autenticado
    */
   @GetMapping("/login")
   public ResponseEntity<SuccessApiResponse<AuthResponseDto>> login(
-      Authentication authentication,
-      HttpServletRequest request) {
+      Authentication authentication) {
 
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new UserNotAuthenticatedException();
@@ -96,18 +95,7 @@ public class AuthController {
 
     AuthResponseDto authData = buildAuthResponse(user);
 
-    SuccessApiResponse<AuthResponseDto> response =
-        SuccessApiResponse.<AuthResponseDto>builder()
-                          .success(true)
-                          .message("Login exitoso")
-                          .status(HttpStatus.OK.getReasonPhrase())
-                          .statusCode(HttpStatus.OK.value())
-                          .timestamp(LocalDateTime.now())
-                          .path(request.getRequestURI())
-                          .data(authData)
-                          .build();
-
-    return ResponseEntity.ok(response);
+    return apiResponseFactory.ok(ResponseMessages.LOGIN_SUCCESSFUL, authData);
   }
 
   /**
@@ -118,14 +106,12 @@ public class AuthController {
    * información de perfil como nombre, apellido y teléfono.</p>
    *
    * @param registerRequest datos de registro del nuevo usuario validados
-   * @param request         solicitud HTTP para obtener información de contexto
    * @return ResponseEntity con datos del usuario registrado en formato estandarizado
    * @throws EmailAddressAlreadyExistsException si el username ya existe en el sistema
    */
   @PostMapping("/register")
   public ResponseEntity<SuccessApiResponse<UserProfileDto>> register(
-      @Valid @RequestBody RegisterRequestDto registerRequest,
-      HttpServletRequest request) {
+      @Valid @RequestBody RegisterRequestDto registerRequest) {
 
     if (userProfileService.userExists(registerRequest.email())) {
       throw new EmailAddressAlreadyExistsException(
@@ -149,18 +135,7 @@ public class AuthController {
 
     log.info("Usuario registrado exitosamente: {}", registerRequest.email());
 
-    SuccessApiResponse<UserProfileDto> response =
-        SuccessApiResponse.<UserProfileDto>builder()
-                          .success(true)
-                          .message("Usuario registrado exitosamente")
-                          .status(HttpStatus.CREATED.getReasonPhrase())
-                          .statusCode(HttpStatus.CREATED.value())
-                          .timestamp(LocalDateTime.now())
-                          .path(request.getRequestURI())
-                          .data(userProfileDto)
-                          .build();
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    return apiResponseFactory.created(ResponseMessages.USER_CREATED, userProfileDto);
   }
 
   /**
@@ -171,14 +146,12 @@ public class AuthController {
    * Basic Auth, utiliza los datos ya cargados en el objeto principal.</p>
    *
    * @param authentication objeto de autenticación del usuario actual
-   * @param request        solicitud HTTP para obtener información de contexto
    * @return ResponseEntity con datos completos del usuario en formato estandarizado
    * @throws UserNotAuthenticatedException si el usuario no está autenticado
    */
   @GetMapping("/me")
   public ResponseEntity<SuccessApiResponse<AuthResponseDto>> getCurrentUser(
-      Authentication authentication,
-      HttpServletRequest request) {
+      Authentication authentication) {
 
     if (authentication == null || !authentication.isAuthenticated()) {
       throw new UserNotAuthenticatedException();
@@ -195,18 +168,7 @@ public class AuthController {
 
     AuthResponseDto authData = buildAuthResponse(user);
 
-    SuccessApiResponse<AuthResponseDto> response =
-        SuccessApiResponse.<AuthResponseDto>builder()
-                          .success(true)
-                          .message("Usuario obtenido exitosamente")
-                          .status(HttpStatus.OK.getReasonPhrase())
-                          .statusCode(HttpStatus.OK.value())
-                          .timestamp(LocalDateTime.now())
-                          .path(request.getRequestURI())
-                          .data(authData)
-                          .build();
-
-    return ResponseEntity.ok(response);
+    return apiResponseFactory.ok(ResponseMessages.USER_RETRIEVED, authData);
   }
 
   /**
@@ -248,17 +210,7 @@ public class AuthController {
 
     log.info("Token renovado exitosamente para usuario: {}", username);
 
-    SuccessApiResponse<Void> apiResponse =
-        SuccessApiResponse.<Void>builder()
-                          .success(true)
-                          .message("Token renovado exitosamente")
-                          .status(HttpStatus.OK.getReasonPhrase())
-                          .statusCode(HttpStatus.OK.value())
-                          .timestamp(LocalDateTime.now())
-                          .path(request.getRequestURI())
-                          .build();
-
-    return ResponseEntity.ok(apiResponse);
+    return apiResponseFactory.ok(ResponseMessages.TOKEN_REFRESHED);
   }
 
   /**
@@ -268,31 +220,18 @@ public class AuthController {
    * y limpia el contexto de seguridad de Spring Security. Esto invalida la sesión
    * del usuario en el cliente.</p>
    *
-   * @param request  solicitud HTTP para obtener información de contexto
    * @param response respuesta HTTP donde se eliminarán las cookies
    * @return ResponseEntity con confirmación de logout en formato estandarizado
    */
   @PostMapping("/logout")
-  public ResponseEntity<SuccessApiResponse<Void>> logout(
-      HttpServletRequest request,
-      HttpServletResponse response) {
+  public ResponseEntity<SuccessApiResponse<Void>> logout(HttpServletResponse response) {
 
     cookieUtil.deleteTokenCookies(response);
     SecurityContextHolder.clearContext();
 
     log.info("Logout ejecutado exitosamente");
 
-    SuccessApiResponse<Void> apiResponse =
-        SuccessApiResponse.<Void>builder()
-                          .success(true)
-                          .message("Logout exitoso")
-                          .status(HttpStatus.OK.getReasonPhrase())
-                          .statusCode(HttpStatus.OK.value())
-                          .timestamp(LocalDateTime.now())
-                          .path(request.getRequestURI())
-                          .build();
-
-    return ResponseEntity.ok(apiResponse);
+    return apiResponseFactory.ok(ResponseMessages.LOGOUT_SUCCESSFUL);
   }
 
   /**

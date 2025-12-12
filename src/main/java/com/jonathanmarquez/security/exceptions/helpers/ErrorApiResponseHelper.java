@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.exceptions.helpers;
 
+import com.jonathanmarquez.security.security.enums.SpringProfile;
 import com.jonathanmarquez.security.utils.ProfileDetector;
 import lombok.NoArgsConstructor;
 
@@ -7,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class ErrorApiResponseHelper {
 
   public static String buildDetails(ProfileDetector profileDetector, Exception ex, String additionalContext) {
-    if (profileDetector.isProfileActive("prod")) {
+    if (profileDetector.isProfileActive(SpringProfile.PROD.getProfileName())) {
       return null;
     }
 

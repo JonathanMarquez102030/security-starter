@@ -10,6 +10,7 @@ import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthentic
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundException;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
+import com.jonathanmarquez.security.security.enums.SpringProfile;
 import com.jonathanmarquez.security.utils.ProfileDetector;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.UnexpectedTypeException;
@@ -617,101 +618,101 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     // Mapeo de excepciones a mensajes amigables
     return switch (ex) {
-      case HttpRequestMethodNotSupportedException e -> "Método HTTP no permitido para este endpoint";
+      case HttpRequestMethodNotSupportedException ignored -> "Método HTTP no permitido para este endpoint";
 
-      case HttpMediaTypeNotSupportedException e -> "Tipo de contenido no soportado. Use 'application/json'";
+      case HttpMediaTypeNotSupportedException ignored -> "Tipo de contenido no soportado. Use 'application/json'";
 
-      case HttpMediaTypeNotAcceptableException e ->
+      case HttpMediaTypeNotAcceptableException ignored ->
           "El servidor no puede generar una respuesta en el formato solicitado";
 
-      case MissingPathVariableException e -> "Falta una variable de ruta requerida";
+      case MissingPathVariableException ignored -> "Falta una variable de ruta requerida";
 
-      case MissingServletRequestParameterException e -> "Faltan parámetros requeridos en la solicitud";
+      case MissingServletRequestParameterException ignored -> "Faltan parámetros requeridos en la solicitud";
 
-      case MissingServletRequestPartException e -> "Falta una parte requerida en la solicitud multipart";
+      case MissingServletRequestPartException ignored -> "Falta una parte requerida en la solicitud multipart";
 
-      case ServletRequestBindingException e -> "Error al vincular los parámetros de la solicitud";
+      case ServletRequestBindingException ignored -> "Error al vincular los parámetros de la solicitud";
 
-      case MethodArgumentNotValidException e -> "Error de validación en los datos enviados";
+      case MethodArgumentNotValidException ignored -> "Error de validación en los datos enviados";
 
-      case HandlerMethodValidationException e -> "Error de validación en los parámetros del método";
+      case HandlerMethodValidationException ignored -> "Error de validación en los parámetros del método";
 
-      case NoHandlerFoundException e -> "Endpoint no encontrado";
+      case NoHandlerFoundException ignored -> "Endpoint no encontrado";
 
-      case NoResourceFoundException e -> "Recurso no encontrado";
+      case NoResourceFoundException ignored -> "Recurso no encontrado";
 
-      case AsyncRequestTimeoutException e -> "La solicitud asíncrona ha excedido el tiempo de espera";
+      case AsyncRequestTimeoutException ignored -> "La solicitud asíncrona ha excedido el tiempo de espera";
 
-      case ErrorResponseException e -> "Error en la respuesta del servidor";
+      case ErrorResponseException ignored -> "Error en la respuesta del servidor";
 
-      case MaxUploadSizeExceededException e -> "El archivo excede el tamaño máximo permitido";
+      case MaxUploadSizeExceededException ignored -> "El archivo excede el tamaño máximo permitido";
 
-      case ConversionNotSupportedException e -> "Error interno: conversión de tipo no soportada";
+      case ConversionNotSupportedException ignored -> "Error interno: conversión de tipo no soportada";
 
-      case TypeMismatchException e -> "Tipo de dato inválido en los parámetros";
+      case TypeMismatchException ignored -> "Tipo de dato inválido en los parámetros";
 
-      case HttpMessageNotReadableException e -> "El cuerpo de la solicitud no es válido o está mal formado";
+      case HttpMessageNotReadableException ignored -> "El cuerpo de la solicitud no es válido o está mal formado";
 
-      case HttpMessageNotWritableException e -> "Error interno al escribir la respuesta";
+      case HttpMessageNotWritableException ignored -> "Error interno al escribir la respuesta";
 
-      case MethodValidationException e -> "Error de validación en el método";
+      case MethodValidationException ignored -> "Error de validación en el método";
 
-      case AsyncRequestNotUsableException e -> "La solicitud asíncrona ya no es utilizable";
+      case AsyncRequestNotUsableException ignored -> "La solicitud asíncrona ya no es utilizable";
 
       // Excepciones de SQL y Base de Datos (DE MÁS ESPECÍFICA A MÁS GENERAL)
-      case JpaSystemException e -> "Error en la configuración de persistencia de datos";
+      case JpaSystemException ignored -> "Error en la configuración de persistencia de datos";
 
-      case JpaObjectRetrievalFailureException e -> "No se pudo recuperar el objeto de la base de datos";
+      case JpaObjectRetrievalFailureException ignored -> "No se pudo recuperar el objeto de la base de datos";
 
       // Excepciones de Hibernate
-      case SQLGrammarException e -> "Error en la estructura de la consulta a la base de datos";
+      case SQLGrammarException ignored -> "Error en la estructura de la consulta a la base de datos";
 
       // Excepciones de Base de Datos
-      case BadSqlGrammarException e -> "Error en la estructura de la consulta a la base de datos";
+      case BadSqlGrammarException ignored -> "Error en la estructura de la consulta a la base de datos";
 
-      case InvalidDataAccessResourceUsageException e -> "Error en la configuración de la base de datos";
+      case InvalidDataAccessResourceUsageException ignored -> "Error en la configuración de la base de datos";
 
-      case SQLSyntaxErrorException e -> "Error de sintaxis en la consulta SQL";
+      case SQLSyntaxErrorException ignored -> "Error de sintaxis en la consulta SQL";
 
-      case SQLException e -> "Error al ejecutar la operación en la base de datos";
+      case SQLException ignored -> "Error al ejecutar la operación en la base de datos";
 
-      case DataIntegrityViolationException e ->
+      case DataIntegrityViolationException ignored ->
           "Violación de integridad de datos. El registro podría estar duplicado o referenciado";
 
-      case DataAccessException e -> "Error al acceder a la base de datos";
+      case DataAccessException ignored -> "Error al acceder a la base de datos";
 
-      case UnexpectedTypeException e -> "Error de configuración en las validaciones";
+      case UnexpectedTypeException ignored -> "Error de configuración en las validaciones";
 
-      case ConstraintViolationException e -> "Violación de restricciones de validación";
+      case ConstraintViolationException ignored -> "Violación de restricciones de validación";
 
       // Excepciones de Seguridad
-      case AccessDeniedException e -> "No tiene permisos para acceder a este recurso";
+      case AccessDeniedException ignored -> "No tiene permisos para acceder a este recurso";
 
-      case AuthenticationException e -> "Credenciales inválidas o token expirado";
+      case AuthenticationException ignored -> "Credenciales inválidas o token expirado";
 
       // Excepciones de Negocio Comunes
-      case IllegalArgumentException e -> "Argumento inválido en la solicitud";
+      case IllegalArgumentException ignored -> "Argumento inválido en la solicitud";
 
-      case IllegalStateException e -> "La operación no se puede realizar en el estado actual";
+      case IllegalStateException ignored -> "La operación no se puede realizar en el estado actual";
 
-      case NullPointerException e -> "Error interno: valor nulo inesperado";
+      case NullPointerException ignored -> "Error interno: valor nulo inesperado";
 
       // Excepciones de Transacciones
-      case TransactionException e -> "Error en la transacción de base de datos";
+      case TransactionException ignored -> "Error en la transacción de base de datos";
 
       // Excepciones de Timeout
-      case SocketTimeoutException e -> "Tiempo de espera agotado en la conexión";
+      case SocketTimeoutException ignored -> "Tiempo de espera agotado en la conexión";
 
       // Excepciones de JSON/Serialización
-      case JsonProcessingException e -> "Error al procesar formato JSON";
+      case JsonProcessingException ignored -> "Error al procesar formato JSON";
 
       // Excepciones de Recursos
-      case FileNotFoundException e -> "Archivo no encontrado";
+      case FileNotFoundException ignored -> "Archivo no encontrado";
 
-      case IOException e -> "Error de entrada/salida al procesar el recurso";
+      case IOException ignored -> "Error de entrada/salida al procesar el recurso";
 
       // Excepciones de Límites
-      case RejectedExecutionException e -> "El servidor está sobrecargado. Intente nuevamente más tarde";
+      case RejectedExecutionException ignored -> "El servidor está sobrecargado. Intente nuevamente más tarde";
 
       default -> {
         // Si es 4xx, mensaje genérico para cliente
@@ -728,7 +729,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * Extrae y limpia el mensaje de error SQL para hacerlo más legible.
    */
   private String extractSqlErrorMessage(Exception ex) {
-    if (profileDetector.isProfileActive("prod")) {
+    if (profileDetector.isProfileActive(SpringProfile.PROD.getProfileName())) {
       return null;
     }
 
@@ -758,7 +759,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * Extrae y limpia el mensaje de error JPA para hacerlo más legible.
    */
   private String extractErrorMessage(Exception ex) {
-    if (profileDetector.isProfileActive("prod")) {
+    if (profileDetector.isProfileActive(SpringProfile.PROD.getProfileName())) {
       return null;
     }
 
@@ -767,7 +768,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       return ex.getClass().getSimpleName();
     }
 
-    // Para JpaSystemException, el mensaje técnico está después de ": "
+    // Para JpaSystemException, el mensaje técnico está después de":"
     if (message.contains(": ")) {
       int colonIndex = message.indexOf(": ");
       if (colonIndex != -1 && colonIndex + 2 < message.length()) {

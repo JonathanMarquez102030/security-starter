@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.security.utils;
 
+import com.jonathanmarquez.security.security.enums.SpringProfile;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -106,7 +107,7 @@ public class CookieUtil {
   private boolean isProductionMode() {
     String[] activeProfiles = env.getActiveProfiles();
     for (String profile : activeProfiles) {
-      if ("prod".equals(profile)) {
+      if (SpringProfile.PROD.getProfileName().equals(profile)) {
         return true;
       }
     }

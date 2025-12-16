@@ -17,6 +17,8 @@ public interface UserProfileService {
 
   void updatePassword(String email, String newRawPassword);
 
+  String getPasswordHash(String email);
+
   void deleteUser(String email);
 
   void setEnabled(String email, boolean enabled);

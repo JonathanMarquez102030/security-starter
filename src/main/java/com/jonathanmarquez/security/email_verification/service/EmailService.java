@@ -1,5 +1,7 @@
 package com.jonathanmarquez.security.email_verification.service;
 
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
+
 /**
  * Servicio para envío de emails.
  */
@@ -13,6 +15,8 @@ public interface EmailService {
    * @param expirationMinutes minutos de validez del OTP
    */
   void sendOtpEmail(String to, String otpCode, Integer expirationMinutes);
+
+  void sendOtpEmail(String toEmail, String otpCode, Integer expirationMinutes, OtpPurpose purpose);
 
   /**
    * Envía un email de bienvenida tras verificación exitosa.

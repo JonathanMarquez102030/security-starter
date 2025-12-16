@@ -1,6 +1,7 @@
 package com.jonathanmarquez.security.email_verification.service;
 
 import com.jonathanmarquez.security.email_verification.dto.OtpResponseDto;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 
 /**
  * Servicio para gestión de tokens OTP.
@@ -43,4 +44,13 @@ public interface OtpService {
    * Tarea programada para limpiar OTP expirados.
    */
   void cleanupExpiredOtps();
+
+  // Nuevos overloads (para distinguir propósito)
+  OtpResponseDto generateAndSendOtp(String email, OtpPurpose purpose);
+
+  boolean verifyOtp(String email, String code, OtpPurpose purpose);
+
+  OtpResponseDto resendOtp(String email, OtpPurpose purpose);
+
+  void deleteAllOtpsByEmail(String email, OtpPurpose purpose);
 }

@@ -15,6 +15,8 @@ public class CookieUtil {
 
   private static final String ACCESS_TOKEN_COOKIE = "accessToken";
   private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
+  private static final String PWD_RESET_TOKEN_COOKIE = "pwdResetToken";
+
   @Autowired
   private Environment env;
 
@@ -82,11 +84,36 @@ public class CookieUtil {
   }
 
   /**
+   * Obtiene el Password Reset Token desde las cookies.
+   */
+  public String getPasswordResetTokenFromCookie(HttpServletRequest request) {
+    return getCookieValue(request, PWD_RESET_TOKEN_COOKIE);
+  }
+
+  /**
+   * Crea una cookie segura para el Password Reset Token (TTL corto).
+   */
+  public void createPasswordResetTokenCookie(HttpServletResponse response, String token) {
+    int maxAge = Integer.parseInt(
+        env.getProperty("jwt.pwd_reset.expiration", "600000")) / 1000; // ms -> seg
+    log.debug("Creando pwdResetToken cookie con maxAge: {} segundos", maxAge);
+    createSecureCookie(response, PWD_RESET_TOKEN_COOKIE, token, maxAge);
+  }
+
+  /**
+   * Elimina la cookie del Password Reset Token.
+   */
+  public void deletePasswordResetTokenCookie(HttpServletResponse response) {
+    deleteCookie(response, PWD_RESET_TOKEN_COOKIE);
+  }
+
+  /**
    * Elimina las cookies de tokens (para logout).
    */
   public void deleteTokenCookies(HttpServletResponse response) {
     deleteCookie(response, ACCESS_TOKEN_COOKIE);
     deleteCookie(response, REFRESH_TOKEN_COOKIE);
+    deleteCookie(response, PWD_RESET_TOKEN_COOKIE);
   }
 
   /**

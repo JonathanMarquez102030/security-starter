@@ -1,6 +1,7 @@
 package com.jonathanmarquez.security.email_verification.model;
 
 import com.jonathanmarquez.security.jpa.AuditableEntity;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -65,6 +66,10 @@ public class OtpToken extends AuditableEntity {
   @Column(name = "verified", nullable = false)
   @Builder.Default
   private Boolean verified = false;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "purpose", nullable = false, length = 50)
+  private OtpPurpose purpose;
 
   /**
    * Incrementa el contador de intentos.

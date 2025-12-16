@@ -1,6 +1,7 @@
 package com.jonathanmarquez.security.email_verification.repository;
 
 import com.jonathanmarquez.security.email_verification.model.OtpToken;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,6 +24,8 @@ public interface OtpTokenRepository extends JpaRepository<OtpToken, UUID> {
    */
   Optional<OtpToken> findTopByEmailAndVerifiedFalseOrderByCreatedDateDesc(String email);
 
+  Optional<OtpToken> findTopByEmailAndPurposeAndVerifiedFalseOrderByCreatedDateDesc(String email, OtpPurpose purpose);
+
   /**
    * Busca un OTP por email y código que no haya sido verificado.
    */
@@ -39,6 +42,8 @@ public interface OtpTokenRepository extends JpaRepository<OtpToken, UUID> {
   @Modifying
   @Query("DELETE FROM OtpToken o WHERE o.email = :email")
   void deleteAllByEmail(@Param("email") String email);
+
+  void deleteAllByEmailAndPurpose(String email, OtpPurpose purpose);
 
   /**
    * Elimina OTP expirados (tarea de limpieza).

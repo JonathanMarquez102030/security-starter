@@ -14,6 +14,7 @@ import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -91,6 +92,24 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Transactional
   public UserProfile updateProfile(UserProfile profile) {
     return userProfileRepository.save(profile);
+  }
+
+
+  /**
+   * Obtiene el hash de la contraseña actual desde la tabla users.
+   * Devuelve null si el usuario no existe o no tiene password.
+   */
+  @Override
+  public String getPasswordHash(String email) {
+    try {
+      return jdbcTemplate.queryForObject(
+          "SELECT password FROM users WHERE username = ?",
+          String.class,
+          email
+      );
+    } catch (EmptyResultDataAccessException ex) {
+      return null;
+    }
   }
 
   //TODO: Implementar con mejor seguridad, con validación de correo electrónico. y con buenas practicas de seguridad.

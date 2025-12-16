@@ -69,6 +69,28 @@ public final class ResponseMessages {
   public static final String EMAIL_VERIFIED = "Email verificado exitosamente";
 
   // ================================
+  // MENSAJES DE PASSWORD / OTP
+  // ================================
+
+  public static final String OTP_SENT = "Código OTP enviado exitosamente";
+  public static final String OTP_RESENT = "Código OTP reenviado exitosamente";
+
+  public static final String PASSWORD_FORGOT_OTP_SENT_GENERIC =
+      "Si el correo existe en nuestro sistema, enviaremos un código OTP para restablecer la contraseña";
+
+  public static final String PASSWORD_RESET_TOKEN_ISSUED =
+      "Token de restablecimiento generado";
+
+  public static final String PASSWORD_RESET_SUCCESS =
+      "Contraseña actualizada exitosamente";
+
+  public static final String PASSWORD_CHANGE_OTP_SENT =
+      "Código OTP enviado para confirmar el cambio de contraseña";
+
+  public static final String PASSWORD_CHANGED_SUCCESS =
+      "Contraseña cambiada exitosamente";
+
+  // ================================
   // MENSAJES DE USUARIOS
   // ================================
 

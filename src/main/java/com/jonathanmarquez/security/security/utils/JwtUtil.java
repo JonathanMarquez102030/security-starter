@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -73,6 +74,31 @@ public class JwtUtil {
   }
 
   /**
+   * Genera un Password Reset Token JWT (TTL corto).
+   * Claims:
+   * - subject=username/email
+   * - username=email
+   * - type=PWD_RESET
+   * - jti=UUID (para invalidación opcional vía blacklist)
+   */
+  public String generatePasswordResetToken(String email) {
+    long expirationTime = Long.parseLong(
+        env.getProperty("jwt.pwd_reset.expiration", "600000") // 10 minutos por defecto
+    );
+
+    return Jwts.builder()
+        .issuer(env.getProperty("jwt.issuer", appName))
+        .subject(email)
+        .claim("username", email)
+        .claim("type", "PWD_RESET")
+        .claim("jti", UUID.randomUUID().toString())
+        .issuedAt(new Date())
+        .expiration(new Date(System.currentTimeMillis() + expirationTime))
+        .signWith(getSigningKey())
+        .compact();
+  }
+
+  /**
    * Extrae el username del token JWT.
    */
   public String extractUsername(String token) {
@@ -91,6 +117,13 @@ public class JwtUtil {
    */
   public String extractTokenType(String token) {
     return extractClaim(token, claims -> String.valueOf(claims.get("type")));
+  }
+
+  /**
+   * Extrae jti del token (si existe).
+   */
+  public String extractJti(String token) {
+    return extractClaim(token, claims -> String.valueOf(claims.get("jti")));
   }
 
   /**
@@ -154,6 +187,17 @@ public class JwtUtil {
   public Boolean isRefreshTokenValid(String token) {
     try {
       return !isTokenExpired(token) && "REFRESH".equals(extractTokenType(token));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  /**
+   * Valida si es un password reset token válido.
+   */
+  public Boolean isPasswordResetTokenValid(String token) {
+    try {
+      return !isTokenExpired(token) && "PWD_RESET".equals(extractTokenType(token));
     } catch (Exception e) {
       return false;
     }

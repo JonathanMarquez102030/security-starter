@@ -105,7 +105,8 @@ public class DevSecurityConfig {
             "/api/auth/login",
             "/api/auth/logout",
             "/api/auth/verify",
-            "/api/auth/resend-otp"
+            "/api/auth/resend-otp",
+            "/api/auth/password/**"
         )
         .csrfTokenRepository(tokenRepository)
     );
@@ -127,10 +128,11 @@ public class DevSecurityConfig {
             "/api/auth/public/**",
             "/api/auth/verify",
             "/api/auth/resend-otp",
+            "/api/auth/password/**",
             "/error",
             "/api/test/**"
         ).permitAll()
-        .requestMatchers("/api/auth/login", "/api/auth/me", "/api/auth/logout").authenticated()
+        .requestMatchers("/api/auth/login", "/api/auth/me", "/api/me/**", "/api/auth/logout").authenticated()
         .requestMatchers("/api/admin/**").hasRole("ADMIN")
         .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
         .anyRequest().authenticated()

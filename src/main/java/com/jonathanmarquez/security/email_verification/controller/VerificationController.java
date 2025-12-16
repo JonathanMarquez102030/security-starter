@@ -83,6 +83,6 @@ public class VerificationController {
 
     OtpResponseDto response = otpService.resendOtp(request.email());
 
-    return apiResponseFactory.ok(ResponseMessages.TOKEN_REFRESHED, response);
+    return apiResponseFactory.ok(ResponseMessages.OTP_RESENT, response);
   }
 }

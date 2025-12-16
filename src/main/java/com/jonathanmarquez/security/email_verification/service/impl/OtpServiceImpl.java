@@ -7,6 +7,7 @@ import com.jonathanmarquez.security.email_verification.model.OtpToken;
 import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
 import com.jonathanmarquez.security.email_verification.service.EmailService;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -38,132 +39,143 @@ public class OtpServiceImpl implements OtpService {
   @Override
   @Transactional
   public OtpResponseDto generateAndSendOtp(String email) {
-    log.info("Generando OTP para email: {}", email);
+    return generateAndSendOtp(email, OtpPurpose.EMAIL_VERIFICATION);
+  }
 
-    // Generar código OTP
+  @Override
+  @Transactional
+  public OtpResponseDto generateAndSendOtp(String email, OtpPurpose purpose) {
+    log.info("Generando OTP para email: {} (purpose={})", email, purpose);
+
     String otpCode = generateOtpCode();
     LocalDateTime now = LocalDateTime.now();
     LocalDateTime expiresAt = now.plusMinutes(otpProperties.getExpirationMinutes());
 
-    // Crear y guardar token
     OtpToken otpToken = OtpToken.builder()
-                                .email(email)
-                                .code(otpCode)
-                                .attempts(0)
-                                .expiresAt(expiresAt)
-                                .lastSentAt(now)
-                                .verified(false)
-                                .build();
+        .email(email)
+        .code(otpCode)
+        .attempts(0)
+        .expiresAt(expiresAt)
+        .lastSentAt(now)
+        .verified(false)
+        .purpose(purpose)
+        .build();
 
     otpTokenRepository.save(otpToken);
-    log.debug("OTP generado y guardado para email: {}", email);
 
-    // Enviar email
-    emailService.sendOtpEmail(email, otpCode, otpProperties.getExpirationMinutes());
+    emailService.sendOtpEmail(email, otpCode, otpProperties.getExpirationMinutes(), purpose);
 
     return OtpResponseDto.builder()
-                         .email(email)
-                         .message("Código OTP enviado exitosamente")
-                         .expirationMinutes(otpProperties.getExpirationMinutes())
-                         .build();
+        .email(email)
+        .message("Código OTP enviado exitosamente")
+        .expirationMinutes(otpProperties.getExpirationMinutes())
+        .build();
   }
 
   @Override
   @Transactional(noRollbackFor = InvalidOtpException.class)
   public boolean verifyOtp(String email, String code) {
-    log.info("Verificando OTP para email: {}", email);
+    return verifyOtp(email, code, OtpPurpose.EMAIL_VERIFICATION);
+  }
 
-    // Buscar OTP más reciente no verificado
+  @Override
+  @Transactional(noRollbackFor = InvalidOtpException.class)
+  public boolean verifyOtp(String email, String code, OtpPurpose purpose) {
+    log.info("Verificando OTP para email: {} (purpose={})", email, purpose);
+
     OtpToken otpToken = otpTokenRepository
-        .findTopByEmailAndVerifiedFalseOrderByCreatedDateDesc(email)
+        .findTopByEmailAndPurposeAndVerifiedFalseOrderByCreatedDateDesc(email, purpose)
         .orElseThrow(OtpNotFoundException::new);
 
-    // Validar si expiró
     if (otpToken.isExpired()) {
-      log.warn("OTP expirado para email: {}", email);
+      log.warn("OTP expirado para email: {} (purpose={})", email, purpose);
       throw new OtpExpiredException();
     }
 
-    // Validar intentos máximos
     if (otpToken.hasReachedMaxAttempts(otpProperties.getMaxAttempts())) {
-      log.warn("Máximo de intentos alcanzado para email: {}", email);
+      log.warn("Máximo de intentos alcanzado para email: {} (purpose={})", email, purpose);
       throw new OtpMaxAttemptsException();
     }
 
-    // Incrementar intentos
     otpToken.incrementAttempts();
     otpTokenRepository.saveAndFlush(otpToken);
 
-    // Verificar código
     if (!otpToken.getCode().equals(code)) {
-      log.warn("Código OTP inválido para email: {} (intento {}/{})",
-               email, otpToken.getAttempts(), otpProperties.getMaxAttempts());
+      log.warn("Código OTP inválido para email: {} (purpose={}) (intento {}/{})",
+          email, purpose, otpToken.getAttempts(), otpProperties.getMaxAttempts());
       throw new InvalidOtpException(
           String.format("Código inválido. Intentos restantes: %d",
-                        otpProperties.getMaxAttempts() - otpToken.getAttempts())
+              otpProperties.getMaxAttempts() - otpToken.getAttempts())
       );
     }
 
-    // Marcar como verificado
     otpToken.setVerified(true);
     otpTokenRepository.save(otpToken);
 
-    log.info("OTP verificado exitosamente para email: {}", email);
+    log.info("OTP verificado exitosamente para email: {} (purpose={})", email, purpose);
     return true;
   }
 
   @Override
   @Transactional
   public OtpResponseDto resendOtp(String email) {
-    log.info("Reenviando OTP para email: {}", email);
+    return resendOtp(email, OtpPurpose.EMAIL_VERIFICATION);
+  }
 
-    // Buscar OTP más reciente
+  @Override
+  @Transactional
+  public OtpResponseDto resendOtp(String email, OtpPurpose purpose) {
+    log.info("Reenviando OTP para email: {} (purpose={})", email, purpose);
+
     OtpToken existingOtp = otpTokenRepository
-        .findTopByEmailAndVerifiedFalseOrderByCreatedDateDesc(email)
+        .findTopByEmailAndPurposeAndVerifiedFalseOrderByCreatedDateDesc(email, purpose)
         .orElse(null);
 
-    // Si existe, validar cooldown
     if (existingOtp != null) {
       LocalDateTime now = LocalDateTime.now();
       long secondsSinceLastSent = ChronoUnit.SECONDS.between(existingOtp.getLastSentAt(), now);
 
       if (secondsSinceLastSent < otpProperties.getResendCooldownSeconds()) {
         long secondsRemaining = otpProperties.getResendCooldownSeconds() - secondsSinceLastSent;
-        log.warn("Intento de reenvío antes del cooldown para email: {} ({} segundos restantes)",
-                 email, secondsRemaining);
+        log.warn("Intento de reenvío antes del cooldown para email: {} (purpose={}) ({}s restantes)",
+            email, purpose, secondsRemaining);
         throw new ResendCooldownException(secondsRemaining);
       }
 
-      // Si no expiró y no alcanzó max intentos, reenviar el mismo código
       if (!existingOtp.isExpired() &&
           !existingOtp.hasReachedMaxAttempts(otpProperties.getMaxAttempts())) {
 
         existingOtp.setLastSentAt(now);
         otpTokenRepository.save(existingOtp);
 
-        emailService.sendOtpEmail(email, existingOtp.getCode(),
-                                  calculateRemainingMinutes(existingOtp.getExpiresAt()));
-
-        log.info("OTP reenviado (mismo código) para email: {}", email);
+        emailService.sendOtpEmail(
+            email,
+            existingOtp.getCode(),
+            calculateRemainingMinutes(existingOtp.getExpiresAt()),
+            purpose
+        );
 
         return OtpResponseDto.builder()
-                             .email(email)
-                             .message("Código OTP reenviado exitosamente")
-                             .expirationMinutes(calculateRemainingMinutes(existingOtp.getExpiresAt()))
-                             .build();
+            .email(email)
+            .message("Código OTP reenviado exitosamente")
+            .expirationMinutes(calculateRemainingMinutes(existingOtp.getExpiresAt()))
+            .build();
       }
     }
 
-    // Si no existe, expiró o alcanzó max intentos, generar nuevo
-    log.info("Generando nuevo OTP para email: {}", email);
-    return generateAndSendOtp(email);
+    return generateAndSendOtp(email, purpose);
   }
 
   @Override
   @Transactional
   public void deleteAllOtpsByEmail(String email) {
-    log.info("Eliminando todos los OTP para email: {}", email);
     otpTokenRepository.deleteAllByEmail(email);
+  }
+
+  @Override
+  @Transactional
+  public void deleteAllOtpsByEmail(String email, OtpPurpose purpose) {
+    otpTokenRepository.deleteAllByEmailAndPurpose(email, purpose);
   }
 
   @Override

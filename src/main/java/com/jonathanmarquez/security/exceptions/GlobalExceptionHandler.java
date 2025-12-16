@@ -5,9 +5,7 @@ import com.jonathanmarquez.security.email_verification.exception.InvalidOtpExcep
 import com.jonathanmarquez.security.email_verification.exception.OtpExpiredException;
 import com.jonathanmarquez.security.email_verification.exception.OtpMaxAttemptsException;
 import com.jonathanmarquez.security.email_verification.exception.ResendCooldownException;
-import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
-import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
-import com.jonathanmarquez.security.exceptions.customexceptions.UserNotFoundException;
+import com.jonathanmarquez.security.exceptions.customexceptions.*;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.security.enums.SpringProfile;
@@ -168,6 +166,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       EmailAddressAlreadyExistsException.class,
       UserNotAuthenticatedException.class,
       UserNotFoundException.class,
+      InvalidPasswordResetTokenException.class,
+      PasswordMismatchException.class,
+      PasswordPolicyException.class,
+      CurrentPasswordInvalidException.class,
+      PasswordReuseNotAllowedException.class
   })
   @Nullable
   public final ResponseEntity<ErrorApiResponse> handleCustomException(
@@ -177,6 +180,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       case EmailAddressAlreadyExistsException e -> handleEmailAddressAlreadyExistsException(e, request);
       case UserNotAuthenticatedException e -> handleUserNotAuthenticatedException(e, request);
       case UserNotFoundException e -> handleUserNotFoundException(e, request);
+
+      case InvalidPasswordResetTokenException e -> handleGenericCustomErrorResponse(e, request);
+      case PasswordMismatchException e -> handleGenericCustomErrorResponse(e, request);
+      case PasswordPolicyException e -> handleGenericCustomErrorResponse(e, request);
+      case CurrentPasswordInvalidException e -> handleGenericCustomErrorResponse(e, request);
+      case PasswordReuseNotAllowedException e -> handleGenericCustomErrorResponse(e, request);
       default -> handleGeneric(ex, request);
     };
   }
@@ -238,6 +247,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(ex.getStatus()).body(response);
   }
 
+  /**
+   * Handler genérico para CustomErrorResponse (mismo formato estándar).
+   */
+  @Nullable
+  protected ResponseEntity<ErrorApiResponse> handleGenericCustomErrorResponse(
+      Exception ex,
+      WebRequest request
+  ) {
+    if (!(ex instanceof com.jonathanmarquez.security.exceptions.customexceptions.CustomErrorResponse cer)) {
+      return handleGeneric(ex, request);
+    }
+
+    ErrorApiResponse response = createErrorResponse(
+        ex,
+        cer.getStatus(),
+        ex.getMessage(),
+        getPath(request),
+        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
+    );
+
+    return ResponseEntity.status(cer.getStatus()).body(response);
+  }
 
   // ================================================================================================================
   // Métodos específicos para excepciones de base de datos
@@ -460,7 +491,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ErrorApiResponse response = createErrorResponse(
         ex,
         status,
-        buildUserFriendlyMessage(ex, status),
+        errorDetails,
         getPath(request),
         errorDetails
     );

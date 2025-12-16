@@ -27,10 +27,11 @@ public class JwtUtil {
   @Value("${spring.application.name}")
   private String appName;
 
-  private SecretKey getSigningKey() {
-    String secret = env.getProperty("jwt.secret.key", "default_secret_min_length_256bits");
-    return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-  }
+  //JWT CLAIMS
+  private static final String USERNAME = "username";
+  private static final String AUTHORITIES = "authorities";
+  private static final String TYPE = "type";
+  private static final String JTI = "jti";
 
   /**
    * Genera un Access Token JWT (corta duración).
@@ -43,11 +44,11 @@ public class JwtUtil {
     return Jwts.builder()
                .issuer(env.getProperty("jwt.issuer", appName))
                .subject(authentication.getName())
-               .claim("username", authentication.getName())
-               .claim("authorities", authentication.getAuthorities().stream()
+               .claim(USERNAME, authentication.getName())
+               .claim(AUTHORITIES, authentication.getAuthorities().stream()
                                                    .map(GrantedAuthority::getAuthority)
                                                    .collect(Collectors.joining(",")))
-               .claim("type", "ACCESS")
+               .claim(TYPE, "ACCESS")
                .issuedAt(new Date())
                .expiration(new Date(System.currentTimeMillis() + expirationTime))
                .signWith(getSigningKey())
@@ -65,8 +66,8 @@ public class JwtUtil {
     return Jwts.builder()
                .issuer(env.getProperty("jwt.issuer", appName))
                .subject(username)
-               .claim("username", username)
-               .claim("type", "REFRESH")
+               .claim(USERNAME, username)
+               .claim(TYPE, "REFRESH")
                .issuedAt(new Date())
                .expiration(new Date(System.currentTimeMillis() + expirationTime))
                .signWith(getSigningKey())
@@ -89,9 +90,9 @@ public class JwtUtil {
     return Jwts.builder()
         .issuer(env.getProperty("jwt.issuer", appName))
         .subject(email)
-        .claim("username", email)
-        .claim("type", "PWD_RESET")
-        .claim("jti", UUID.randomUUID().toString())
+        .claim(USERNAME, email)
+        .claim(TYPE, "PWD_RESET")
+        .claim(JTI, UUID.randomUUID().toString())
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + expirationTime))
         .signWith(getSigningKey())
@@ -102,28 +103,28 @@ public class JwtUtil {
    * Extrae el username del token JWT.
    */
   public String extractUsername(String token) {
-    return extractClaim(token, claims -> String.valueOf(claims.get("username")));
+    return extractClaim(token, claims -> String.valueOf(claims.get(USERNAME)));
   }
 
   /**
    * Extrae las autoridades del token JWT.
    */
   public String extractAuthorities(String token) {
-    return extractClaim(token, claims -> String.valueOf(claims.get("authorities")));
+    return extractClaim(token, claims -> String.valueOf(claims.get(AUTHORITIES)));
   }
 
   /**
    * Extrae el tipo de token (ACCESS o REFRESH).
    */
   public String extractTokenType(String token) {
-    return extractClaim(token, claims -> String.valueOf(claims.get("type")));
+    return extractClaim(token, claims -> String.valueOf(claims.get(TYPE)));
   }
 
   /**
    * Extrae jti del token (si existe).
    */
   public String extractJti(String token) {
-    return extractClaim(token, claims -> String.valueOf(claims.get("jti")));
+    return extractClaim(token, claims -> String.valueOf(claims.get(JTI)));
   }
 
   /**
@@ -141,23 +142,6 @@ public class JwtUtil {
     return claimsResolver.apply(claims);
   }
 
-  /**
-   * Extrae todos los claims del token JWT.
-   */
-  private Claims extractAllClaims(String token) {
-    return Jwts.parser()
-               .verifyWith(getSigningKey())
-               .build()
-               .parseSignedClaims(token)
-               .getPayload();
-  }
-
-  /**
-   * Verifica si el token ha expirado.
-   */
-  private Boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
-  }
 
   /**
    * Valida si el token es válido (no expirado y tipo correcto).
@@ -201,5 +185,28 @@ public class JwtUtil {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  /**
+   * Verifica si el token ha expirado.
+   */
+  private Boolean isTokenExpired(String token) {
+    return extractExpiration(token).before(new Date());
+  }
+
+  private SecretKey getSigningKey() {
+    String secret = env.getProperty("jwt.secret.key", "default_secret_min_length_256bits");
+    return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * Extrae todos los claims del token JWT.
+   */
+  private Claims extractAllClaims(String token) {
+    return Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
   }
 }

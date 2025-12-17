@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Getter
 @Setter
-@Configuration
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 

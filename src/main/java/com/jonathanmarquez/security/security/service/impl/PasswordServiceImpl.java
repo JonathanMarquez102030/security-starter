@@ -1,5 +1,6 @@
 package com.jonathanmarquez.security.security.service.impl;
 
+import com.jonathanmarquez.security.email_verification.exception.InvalidOtpException;
 import com.jonathanmarquez.security.email_verification.exception.ResendCooldownException;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.*;
@@ -82,7 +83,6 @@ public class PasswordServiceImpl implements PasswordService {
   }
 
   @Override
-  @Transactional
   public void confirmChangePassword(
       String authenticatedEmail,
       String currentPassword,

@@ -52,7 +52,7 @@ logging:
   level:
     org.springframework.security: INFO
     com.jonathanmarquez.security: DEBUG
-    com.jonathanmarquez.security.security.filter: DEBUG
+    com.jonathanmarquez.security.security.filter: INFO
     com.jonathanmarquez.security.security.utils: DEBUG
 
 server:

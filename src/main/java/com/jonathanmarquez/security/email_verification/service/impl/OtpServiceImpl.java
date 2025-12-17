@@ -36,11 +36,6 @@ public class OtpServiceImpl implements OtpService {
   private final JdbcTemplate jdbcTemplate;
 
 
-  @Override
-  @Transactional
-  public OtpResponseDto generateAndSendOtp(String email) {
-    return generateAndSendOtp(email, OtpPurpose.EMAIL_VERIFICATION);
-  }
 
   @Override
   @Transactional
@@ -74,13 +69,7 @@ public class OtpServiceImpl implements OtpService {
 
   @Override
   @Transactional(noRollbackFor = InvalidOtpException.class)
-  public boolean verifyOtp(String email, String code) {
-    return verifyOtp(email, code, OtpPurpose.EMAIL_VERIFICATION);
-  }
-
-  @Override
-  @Transactional(noRollbackFor = InvalidOtpException.class)
-  public boolean verifyOtp(String email, String code, OtpPurpose purpose) {
+  public void verifyOtp(String email, String code, OtpPurpose purpose) {
     log.info("Verificando OTP para email: {} (purpose={})", email, purpose);
 
     OtpToken otpToken = otpTokenRepository
@@ -113,13 +102,6 @@ public class OtpServiceImpl implements OtpService {
     otpTokenRepository.save(otpToken);
 
     log.info("OTP verificado exitosamente para email: {} (purpose={})", email, purpose);
-    return true;
-  }
-
-  @Override
-  @Transactional
-  public OtpResponseDto resendOtp(String email) {
-    return resendOtp(email, OtpPurpose.EMAIL_VERIFICATION);
   }
 
   @Override
@@ -172,11 +154,6 @@ public class OtpServiceImpl implements OtpService {
     otpTokenRepository.deleteAllByEmail(email);
   }
 
-  @Override
-  @Transactional
-  public void deleteAllOtpsByEmail(String email, OtpPurpose purpose) {
-    otpTokenRepository.deleteAllByEmailAndPurpose(email, purpose);
-  }
 
   @Override
   @Transactional
@@ -184,22 +161,6 @@ public class OtpServiceImpl implements OtpService {
   public void cleanupExpiredOtps() {
     log.info("Ejecutando limpieza de OTP expirados");
     otpTokenRepository.deleteExpiredTokens(LocalDateTime.now());
-  }
-
-  /**
-   * Genera un código OTP de 6 dígitos numéricos.
-   */
-  private String generateOtpCode() {
-    int otp = secureRandom.nextInt(900000) + 100000; // 100000 a 999999
-    return String.valueOf(otp);
-  }
-
-  /**
-   * Calcula los minutos restantes hasta expiración.
-   */
-  private Integer calculateRemainingMinutes(LocalDateTime expiresAt) {
-    long minutesRemaining = ChronoUnit.MINUTES.between(LocalDateTime.now(), expiresAt);
-    return Math.max(0, (int) minutesRemaining);
   }
 
   /**
@@ -259,6 +220,23 @@ public class OtpServiceImpl implements OtpService {
       log.error("Error crítico en limpieza de cuentas no verificadas", e);
     }
   }
+
+  /**
+   * Genera un código OTP de 6 dígitos numéricos.
+   */
+  private String generateOtpCode() {
+    int otp = secureRandom.nextInt(900000) + 100000; // 100000 a 999,999
+    return String.valueOf(otp);
+  }
+
+  /**
+   * Calcula los minutos restantes hasta expiración.
+   */
+  private Integer calculateRemainingMinutes(LocalDateTime expiresAt) {
+    long minutesRemaining = ChronoUnit.MINUTES.between(LocalDateTime.now(), expiresAt);
+    return Math.max(0, (int) minutesRemaining);
+  }
+
 
   /**
    * Elimina una cuenta no verificada y todos sus datos relacionados.

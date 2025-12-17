@@ -6,6 +6,7 @@ import com.jonathanmarquez.security.exceptions.customexceptions.InvalidRefreshTo
 import com.jonathanmarquez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquez.security.exceptions.response.ApiResponseFactory;
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 import com.jonathanmarquez.security.security.enums.Role;
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquez.security.security.model.UserProfile;
@@ -123,7 +124,7 @@ public class AuthController {
 
     // 2. Enviar OTP en operación separada (no afecta transacción principal)
     try {
-      otpService.generateAndSendOtp(registerRequest.email());
+      otpService.generateAndSendOtp(registerRequest.email(), OtpPurpose.EMAIL_VERIFICATION);
       log.info("OTP generado y enviado para: {}", registerRequest.email());
     } catch (Exception e) {
       log.error("Error al generar/enviar OTP para {}: {}", registerRequest.email(), e.getMessage(), e);

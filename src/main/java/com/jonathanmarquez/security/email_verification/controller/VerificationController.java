@@ -7,6 +7,7 @@ import com.jonathanmarquez.security.email_verification.service.EmailService;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.response.ApiResponseFactory;
 import com.jonathanmarquez.security.exceptions.response.SuccessApiResponse;
+import com.jonathanmarquez.security.security.enums.OtpPurpose;
 import com.jonathanmarquez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.utils.ResponseMessages;
@@ -50,7 +51,7 @@ public class VerificationController {
     log.info("Solicitud de verificación OTP para email: {}", request.email());
 
     // Verificar OTP
-    otpService.verifyOtp(request.email(), request.code());
+    otpService.verifyOtp(request.email(), request.code(), OtpPurpose.EMAIL_VERIFICATION);
 
     // Habilitar usuario
     userProfileService.setEmailVerified(request.email(), true);
@@ -81,7 +82,7 @@ public class VerificationController {
 
     log.info("Solicitud de reenvío OTP para email: {}", request.email());
 
-    OtpResponseDto response = otpService.resendOtp(request.email());
+    OtpResponseDto response = otpService.resendOtp(request.email(), OtpPurpose.EMAIL_VERIFICATION);
 
     return apiResponseFactory.ok(ResponseMessages.OTP_RESENT, response);
   }

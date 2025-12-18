@@ -5,6 +5,7 @@ import com.jonathanmarquez.security.email_verification.exception.ResendCooldownE
 import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.*;
 import com.jonathanmarquez.security.security.enums.OtpPurpose;
+import com.jonathanmarquez.security.security.model.dto.ChangePasswordConfirmRequestDto;
 import com.jonathanmarquez.security.security.service.PasswordService;
 import com.jonathanmarquez.security.security.service.UserProfileService;
 import com.jonathanmarquez.security.security.utils.JwtUtil;
@@ -38,6 +39,7 @@ public class PasswordServiceImpl implements PasswordService {
       otpService.resendOtp(email, OtpPurpose.PASSWORD_RESET);
     } catch (ResendCooldownException ex) {
       log.debug("Cooldown activo en forgot-password para email (no expuesto).");
+      throw new ResendCooldownException("Cooldown activo en forgot-password para email (no expuesto).");
     } catch (Exception ex) {
       log.warn("No se pudo enviar OTP de forgot-password (no expuesto).");
     }
@@ -83,13 +85,14 @@ public class PasswordServiceImpl implements PasswordService {
   }
 
   @Override
-  public void confirmChangePassword(
-      String authenticatedEmail,
-      String currentPassword,
-      String newPassword,
-      String confirmPassword,
-      String otpCode
+  public void confirmChangePassword(String authenticatedEmail,
+                                    ChangePasswordConfirmRequestDto passwordChangeDto
   ) {
+    String newPassword = passwordChangeDto.newPassword();
+    String confirmPassword = passwordChangeDto.confirmPassword();
+    String currentPassword = passwordChangeDto.currentPassword();
+    String otpCode = passwordChangeDto.otpCode();
+
     ensurePasswordsMatch(newPassword, confirmPassword);
     ensurePasswordPolicy(newPassword);
 
@@ -113,7 +116,7 @@ public class PasswordServiceImpl implements PasswordService {
   }
 
   private void ensurePasswordsMatch(String newPassword, String confirmPassword) {
-    if (newPassword == null || confirmPassword == null || !newPassword.equals(confirmPassword)) {
+    if (newPassword == null || !newPassword.equals(confirmPassword)) {
       throw new PasswordMismatchException();
     }
   }

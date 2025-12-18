@@ -49,13 +49,7 @@ public class MePasswordController {
 
     String email = authentication.getName();
 
-    passwordService.confirmChangePassword(
-        email,
-        request.currentPassword(),
-        request.newPassword(),
-        request.confirmPassword(),
-        request.otpCode()
-    );
+    passwordService.confirmChangePassword(email, request);
 
     // Estrategia mínima: borrar cookies y limpiar contexto para forzar re-login.
     cookieUtil.deleteTokenCookies(response);

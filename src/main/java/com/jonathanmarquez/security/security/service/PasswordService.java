@@ -1,6 +1,8 @@
 package com.jonathanmarquez.security.security.service;
 
 
+import com.jonathanmarquez.security.security.model.dto.ChangePasswordConfirmRequestDto;
+
 public interface PasswordService {
 
   void requestForgotPasswordOtp(String email);
@@ -13,9 +15,6 @@ public interface PasswordService {
 
   void confirmChangePassword(
       String authenticatedEmail,
-      String currentPassword,
-      String newPassword,
-      String confirmPassword,
-      String otpCode
+      ChangePasswordConfirmRequestDto changePasswordConfirmRequestDto
   );
 }

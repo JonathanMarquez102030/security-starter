@@ -64,7 +64,7 @@ public class DevSecurityConfig {
     configureAuthorization(http);
 
 
-    // 6. configureFormLogin  y HTTP Basic
+    // 6. configureFormLogin y HTTP Basic
     configureFormLogin(http);
     configureHttpBasic(http);
     configureExceptionHandling(http);

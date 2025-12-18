@@ -1,6 +1,5 @@
 package com.jonathanmarquez.security.security.service.impl;
 
-import com.jonathanmarquez.security.email_verification.repository.OtpTokenRepository;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
 import com.jonathanmarquez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
 import com.jonathanmarquez.security.security.config.SecurityProperties;
@@ -44,7 +43,6 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final SecurityProperties securityProperties;
   private final UserProfileMapper userProfileMapper;
   private final OtpService otpService;
-  private final OtpTokenRepository otpTokenRepository;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.

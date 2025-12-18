@@ -9,18 +9,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Utilidad para detectar y verificar perfiles de Spring activos en la aplicación.
+ *
+ * <p>Esta clase proporciona procesos de ayuda para consultar qué perfiles de Spring
+ * están activos durante la ejecución de la aplicación. Es útil para comportamiento
+ * condicional basado en el entorno (desarrollo, producción, testing, etc.) y para
+ * decisiones sobre logging, configuración de seguridad, o características específicas
+ * del entorno.</p>
+ */
 @Component
 public class ProfileDetector {
 
   private final Environment env;
 
+  /**
+   * Constructor que inyecta el objeto Environment de Spring.
+   *
+   * @param env objeto Environment para acceder a los perfiles activos
+   */
   @Autowired
   public ProfileDetector(Environment env) {
     this.env = env;
   }
 
   /**
-   * Verifica si el perfil especificado está activo
+   * Verifica si el perfil especificado está activo en la aplicación.
+   *
+   * <p>La comparación es insensible a mayúsculas y minúsculas.</p>
+   *
+   * @param profileName nombre del perfil a verificar
+   * @return true si el perfil está activo, false en caso contrario
    */
   public boolean isProfileActive(String profileName) {
     return Arrays.stream(env.getActiveProfiles())
@@ -28,7 +47,12 @@ public class ProfileDetector {
   }
 
   /**
-   * Verifica si alguno de los perfiles especificados está activo
+   * Verifica si al menos uno de los perfiles especificados está activo.
+   *
+   * <p>La comparación es insensible a mayúsculas y minúsculas.</p>
+   *
+   * @param profileNames nombres de los perfiles a verificar
+   * @return true si al menos uno de los perfiles está activo, false si ninguno lo está
    */
   public boolean isAnyProfileActive(String... profileNames) {
     Set<String> targetProfiles = Arrays.stream(profileNames)
@@ -41,7 +65,12 @@ public class ProfileDetector {
   }
 
   /**
-   * Verifica si todos los perfiles especificados están activos
+   * Verifica si todos los perfiles especificados están activos simultáneamente.
+   *
+   * <p>La comparación es insensible a mayúsculas y minúsculas.</p>
+   *
+   * @param profileNames nombres de los perfiles a verificar
+   * @return true si todos los perfiles están activos, false si falta alguno
    */
   public boolean areAllProfilesActive(String... profileNames) {
     Set<String> targetProfiles = Arrays.stream(profileNames)
@@ -56,7 +85,9 @@ public class ProfileDetector {
   }
 
   /**
-   * Obtiene todos los perfiles activos como lista
+   * Obtiene la lista de todos los perfiles activos en la aplicación.
+   *
+   * @return lista con los nombres de los perfiles activos
    */
   public List<String> getActiveProfiles() {
     return Arrays.asList(env.getActiveProfiles());

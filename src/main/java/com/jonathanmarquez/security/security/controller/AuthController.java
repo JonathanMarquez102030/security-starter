@@ -122,14 +122,13 @@ public class AuthController {
 
     UserProfile userProfile = userProfileService.createUser(registerRequest, List.of(Role.ROLE_USER));
 
-    // 2. Enviar OTP en operación separada (no afecta transacción principal)
+    // 2. Enviar OTP en operación separada
     try {
       otpService.generateAndSendOtp(registerRequest.email(), OtpPurpose.EMAIL_VERIFICATION);
       log.info("OTP generado y enviado para: {}", registerRequest.email());
     } catch (Exception e) {
       log.error("Error al generar/enviar OTP para {}: {}", registerRequest.email(), e.getMessage(), e);
       // El usuario ya está creado, solo falló el envío del email
-      // Se puede reenviar después
     }
 
     UserProfileDto userProfileDto = userProfileMapper.toUserProfileDto(userProfile);

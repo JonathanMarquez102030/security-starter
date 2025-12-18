@@ -15,6 +15,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtro que genera tokens JWT tras una autenticación exitosa.
+ *
+ * <p>Este filtro intercepta peticiones al endpoint de login y, si existe un usuario
+ * autenticado en el contexto de seguridad, genera un par de tokens JWT (access token
+ * y refresh token) que se almacenan en cookies HTTP-only seguras. También envía el
+ * access token en el encabezado Authorization para compatibilidad con clientes que
+ * prefieran ese mecanismo.</p>
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
@@ -22,6 +31,21 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
 
+  /**
+   * Procesa la petición generando tokens JWT si existe autenticación válida.
+   *
+   * <p>Verifica si hay un usuario autenticado en el contexto de seguridad de Spring.
+   * Si existe, genera un access token con información del usuario y sus autoridades,
+   * y un refresh token para renovación. Ambos tokens se almacenan en cookies seguras
+   * HTTP-only y el access token también se incluye en el encabezado Authorization.
+   * Registra información de depuración sobre el proceso de generación de tokens.</p>
+   *
+   * @param request petición HTTP actual
+   * @param response respuesta HTTP donde se establecerán las cookies y encabezados con los tokens
+   * @param filterChain cadena de filtros para continuar el procesamiento de la petición
+   * @throws ServletException sí ocurre un error durante el procesamiento del servlet
+   * @throws IOException sí ocurre un error de entrada/salida
+   */
   @Override
   protected void doFilterInternal(@NonNull HttpServletRequest request,
                                   @NonNull HttpServletResponse response,
@@ -62,13 +86,13 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
 
 
   /**
-   * Determina si el request que se está procesando debe ser filtrado por este
-   * Filtro. En este caso, solo se filtran las peticiones que tengan como
-   * servletPath a "/user".
+   * Determina si este filtro debe ejecutarse para la petición actual.
    *
-   * @param request La peticion que se está procesando
-   * @return boolean true si el request no debe ser filtrado, false en caso
-   * contrario
+   * <p>Este filtro solo debe procesar peticiones al endpoint de login. Para cualquier
+   * otra ruta, el filtro se omite evitando procesamiento innecesario.</p>
+   *
+   * @param request petición HTTP que se está procesando
+   * @return true si el filtro NO debe ejecutarse, false si debe procesarse
    */
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {

@@ -15,12 +15,33 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+/**
+ * Manejador personalizado para excepciones de acceso denegado en Spring Security.
+ *
+ * <p>Esta clase intercepta las excepciones de tipo {@link AccessDeniedException} que ocurren
+ * cuando un usuario autenticado intenta acceder a recursos para los cuales no tiene permisos
+ * suficientes. Genera una respuesta JSON estructurada con código HTTP 403 (Forbidden) y
+ * detalles del error según el perfil de ejecución activo.</p>
+ */
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
   private final ProfileDetector profileDetector;
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
+  /**
+   * Maneja las excepciones de acceso denegado generando una respuesta JSON con el error.
+   *
+   * <p>Construye una respuesta de error estructurada que incluye el código de estado 403,
+   * un mensaje descriptivo, la ruta solicitada, timestamp y detalles adicionales según el
+   * perfil activo. Establece encabezados HTTP apropiados y escribe la respuesta en formato
+   * JSON con codificación UTF-8.</p>
+   *
+   * @param request solicitud HTTP que generó la excepción de acceso denegado
+   * @param response respuesta HTTP donde se escribirá el error en formato JSON
+   * @param accessDeniedException excepción lanzada cuando el acceso es denegado
+   * @throws IOException si ocurre un error al escribir la respuesta
+   */
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
                      AccessDeniedException accessDeniedException) throws IOException {

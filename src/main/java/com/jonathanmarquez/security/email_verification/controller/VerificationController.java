@@ -50,13 +50,10 @@ public class VerificationController {
 
     log.info("Solicitud de verificación OTP para email: {}", request.email());
 
-    // Verificar OTP
     otpService.verifyOtp(request.email(), request.code(), OtpPurpose.EMAIL_VERIFICATION);
 
-    // Habilitar usuario
     userProfileService.setEmailVerified(request.email(), true);
 
-    // Enviar email de bienvenida
     userProfileRepository.findByEmail(request.email()).ifPresent(profile ->
                                                                      emailService.sendWelcomeEmail(request.email(),
                                                                                                    profile.getFirstName())

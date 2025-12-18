@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
  */
 @Getter
 @Setter
-@Configuration
 @ConfigurationProperties(prefix = "otp")
 public class OtpProperties {
 
@@ -22,7 +21,7 @@ public class OtpProperties {
   /**
    * Minutos de validez del OTP.
    */
-  private Integer expirationMinutes = 5;
+  private Integer expirationMinutes = 10;
 
   /**
    * Máximo de intentos de verificación permitidos.

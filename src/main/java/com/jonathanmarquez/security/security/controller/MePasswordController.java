@@ -51,7 +51,7 @@ public class MePasswordController {
 
     passwordService.confirmChangePassword(email, request);
 
-    // Estrategia mínima: borrar cookies y limpiar contexto para forzar re-login.
+    // Borrar cookies y limpiar contexto para forzar re-login.
     cookieUtil.deleteTokenCookies(response);
     SecurityContextHolder.clearContext();
 

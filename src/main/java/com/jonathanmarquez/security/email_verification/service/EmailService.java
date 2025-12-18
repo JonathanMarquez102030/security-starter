@@ -10,12 +10,11 @@ public interface EmailService {
   /**
    * Envía un código OTP de verificación al email especificado.
    *
-   * @param to                email del destinatario
+   * @param toEmail                email del destinatario
    * @param otpCode           código OTP a enviar
    * @param expirationMinutes minutos de validez del OTP
+   * @param purpose propósito del OTP
    */
-  void sendOtpEmail(String to, String otpCode, Integer expirationMinutes);
-
   void sendOtpEmail(String toEmail, String otpCode, Integer expirationMinutes, OtpPurpose purpose);
 
   /**

@@ -24,10 +24,6 @@ public class EmailServiceImpl implements EmailService {
   @Value("${spring.mail.username}")
   private String fromEmail;
 
-  @Override
-  public void sendOtpEmail(String to, String otpCode, Integer expirationMinutes) {
-    sendOtpEmail(to, otpCode, expirationMinutes, OtpPurpose.EMAIL_VERIFICATION);
-  }
 
   @Override
   public void sendOtpEmail(String toEmail, String otpCode, Integer expirationMinutes, OtpPurpose purpose) {
@@ -42,7 +38,6 @@ public class EmailServiceImpl implements EmailService {
 
       mailSender.send(message);
 
-      // No loggear el OTP ni el body
       log.info("Email OTP enviado exitosamente a: {} (purpose={})", toEmail, purpose);
 
     } catch (MessagingException e) {
@@ -80,7 +75,7 @@ public class EmailServiceImpl implements EmailService {
   }
 
   /**
-   * Construye el template HTML para el email de OTP dependiendo del propósito.
+   * Construye la plantilla HTML para el email de OTP dependiendo del propósito.
    */
   private String buildOtpEmailTemplate(String otpCode, Integer expirationMinutes, OtpPurpose purpose) {
     int minutes = expirationMinutes == null ? 0 : expirationMinutes;

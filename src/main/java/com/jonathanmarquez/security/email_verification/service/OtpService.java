@@ -23,7 +23,7 @@ public interface OtpService {
   /**
    * Genera y envía un nuevo código OTP.
    *
-   * @param email email del usuario
+   * @param email   email del usuario
    * @param purpose propósito del OTP
    * @return información del OTP generado
    */
@@ -32,8 +32,8 @@ public interface OtpService {
   /**
    * Verifica un código OTP.
    *
-   * @param email email del usuario
-   * @param code  código OTP a verificar
+   * @param email   email del usuario
+   * @param code    código OTP a verificar
    * @param purpose propósito del OTP
    * @return true si la verificación es exitosa
    */
@@ -42,7 +42,7 @@ public interface OtpService {
   /**
    * Reenvía un código OTP existente o genera uno nuevo.
    *
-   * @param email email del usuario
+   * @param email   email del usuario
    * @param purpose propósito del OTP
    * @return información del OTP reenviado
    */

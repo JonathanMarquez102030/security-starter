@@ -60,8 +60,6 @@ public class PasswordController {
     String resetToken = cookieUtil.getPasswordResetTokenFromCookie(httpServletRequest);
 
     passwordService.resetPassword(resetToken, request.newPassword(), request.confirmPassword());
-
-    // Consumir el token: borrar cookie (mitigación básica en stateless)
     cookieUtil.deletePasswordResetTokenCookie(httpServletResponse);
 
     return apiResponseFactory.ok(ResponseMessages.PASSWORD_RESET_SUCCESS);

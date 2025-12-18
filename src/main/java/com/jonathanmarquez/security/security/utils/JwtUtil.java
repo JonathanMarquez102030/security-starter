@@ -46,8 +46,8 @@ public class JwtUtil {
                .subject(authentication.getName())
                .claim(USERNAME, authentication.getName())
                .claim(AUTHORITIES, authentication.getAuthorities().stream()
-                                                   .map(GrantedAuthority::getAuthority)
-                                                   .collect(Collectors.joining(",")))
+                                                 .map(GrantedAuthority::getAuthority)
+                                                 .collect(Collectors.joining(",")))
                .claim(TYPE, "ACCESS")
                .issuedAt(new Date())
                .expiration(new Date(System.currentTimeMillis() + expirationTime))
@@ -88,15 +88,15 @@ public class JwtUtil {
     );
 
     return Jwts.builder()
-        .issuer(env.getProperty("jwt.issuer", appName))
-        .subject(email)
-        .claim(USERNAME, email)
-        .claim(TYPE, "PWD_RESET")
-        .claim(JTI, UUID.randomUUID().toString())
-        .issuedAt(new Date())
-        .expiration(new Date(System.currentTimeMillis() + expirationTime))
-        .signWith(getSigningKey())
-        .compact();
+               .issuer(env.getProperty("jwt.issuer", appName))
+               .subject(email)
+               .claim(USERNAME, email)
+               .claim(TYPE, "PWD_RESET")
+               .claim(JTI, UUID.randomUUID().toString())
+               .issuedAt(new Date())
+               .expiration(new Date(System.currentTimeMillis() + expirationTime))
+               .signWith(getSigningKey())
+               .compact();
   }
 
   /**
@@ -204,9 +204,9 @@ public class JwtUtil {
    */
   private Claims extractAllClaims(String token) {
     return Jwts.parser()
-        .verifyWith(getSigningKey())
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
+               .verifyWith(getSigningKey())
+               .build()
+               .parseSignedClaims(token)
+               .getPayload();
   }
 }

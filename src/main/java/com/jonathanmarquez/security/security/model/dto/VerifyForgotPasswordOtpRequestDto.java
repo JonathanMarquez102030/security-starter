@@ -9,4 +9,5 @@ public record VerifyForgotPasswordOtpRequestDto(
     @NotBlank
     @Pattern(regexp = "^[0-9]{6}$", message = "El OTP debe tener 6 dígitos")
     String otpCode
-) {}
+) {
+}

@@ -4,7 +4,6 @@ import com.jonathanmarquez.security.security.enums.AuthorizationMode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Propiedades configurables para el sistema de seguridad.

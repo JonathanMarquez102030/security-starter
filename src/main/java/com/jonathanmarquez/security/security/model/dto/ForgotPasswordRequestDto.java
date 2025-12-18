@@ -5,4 +5,5 @@ import jakarta.validation.constraints.NotBlank;
 
 public record ForgotPasswordRequestDto(
     @NotBlank @Email String email
-) {}
+) {
+}

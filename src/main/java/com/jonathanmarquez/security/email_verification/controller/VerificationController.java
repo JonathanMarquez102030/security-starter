@@ -41,7 +41,7 @@ public class VerificationController {
    * POST /api/auth/verify
    * Body: { "email": "user@example.com", "code": "123456" }
    *
-   * @param request     verificación request
+   * @param request verificación request
    * @return respuesta de verificación
    */
   @PostMapping("/verify")
@@ -73,7 +73,7 @@ public class VerificationController {
    * POST /api/auth/resend-otp
    * Body: { "email": "user@example.com" }
    *
-   * @param request     reenvío request
+   * @param request reenvío request
    * @return información del OTP reenviado
    */
   @PostMapping("/resend-otp")

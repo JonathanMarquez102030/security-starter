@@ -32,14 +32,14 @@ public class ApiResponseFactory {
       T data
   ) {
     SuccessApiResponse<T> body = SuccessApiResponse.<T>builder()
-        .success(true)
-        .message(message)
-        .status(status.getReasonPhrase())
-        .statusCode(status.value())
-        .timestamp(LocalDateTime.now())
-        .path(request.getRequestURI())
-        .data(data)
-        .build();
+                                                   .success(true)
+                                                   .message(message)
+                                                   .status(status.getReasonPhrase())
+                                                   .statusCode(status.value())
+                                                   .timestamp(LocalDateTime.now())
+                                                   .path(request.getRequestURI())
+                                                   .data(data)
+                                                   .build();
 
     return ResponseEntity.status(status).body(body);
   }

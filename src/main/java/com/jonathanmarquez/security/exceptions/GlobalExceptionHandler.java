@@ -177,10 +177,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       Exception ex, WebRequest request) {
 
     return switch (ex) {
-      case EmailAddressAlreadyExistsException e -> handleEmailAddressAlreadyExistsException(e, request);
+      case EmailAddressAlreadyExistsException e -> handleGenericCustomErrorResponse(e, request);
       case UserNotAuthenticatedException e -> handleUserNotAuthenticatedException(e, request);
-      case UserNotFoundException e -> handleUserNotFoundException(e, request);
-
+      case UserNotFoundException e -> handleGenericCustomErrorResponse(e, request);
       case InvalidPasswordResetTokenException e -> handleGenericCustomErrorResponse(e, request);
       case PasswordMismatchException e -> handleGenericCustomErrorResponse(e, request);
       case PasswordPolicyException e -> handleGenericCustomErrorResponse(e, request);
@@ -190,23 +189,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     };
   }
 
-  /**
-   * Maneja excepción de email ya existente.
-   */
-  @Nullable
-  protected ResponseEntity<ErrorApiResponse> handleEmailAddressAlreadyExistsException(
-      EmailAddressAlreadyExistsException ex, WebRequest request) {
-
-    ErrorApiResponse response = createErrorResponse(
-        ex,
-        ex.getStatus(),
-        ex.getMessage(),
-        getPath(request),
-        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
-    );
-
-    return ResponseEntity.status(ex.getStatus()).body(response);
-  }
 
   /**
    * Maneja excepción de usuario no autenticado.
@@ -229,23 +211,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(ex.getStatus()).body(response);
   }
 
-  /**
-   * Maneja excepción de usuario no encontrado.
-   */
-  @Nullable
-  protected ResponseEntity<ErrorApiResponse> handleUserNotFoundException(
-      UserNotFoundException ex, WebRequest request) {
-
-    ErrorApiResponse response = createErrorResponse(
-        ex,
-        ex.getStatus(),
-        ex.getMessage(),
-        getPath(request),
-        ErrorApiResponseHelper.buildDetails(profileDetector, ex, null)
-    );
-
-    return ResponseEntity.status(ex.getStatus()).body(response);
-  }
 
   /**
    * Handler genérico para CustomErrorResponse (mismo formato estándar).

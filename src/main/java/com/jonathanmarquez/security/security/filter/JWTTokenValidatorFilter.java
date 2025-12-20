@@ -45,11 +45,11 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
    * contexto de seguridad de Spring. Si el token es inválido o no existe, la petición
    * continúa sin autenticación establecida.</p>
    *
-   * @param request petición HTTP actual de la cual extraer el token JWT
-   * @param response respuesta HTTP actual
+   * @param request     petición HTTP actual de la cual extraer el token JWT
+   * @param response    respuesta HTTP actual
    * @param filterChain cadena de filtros para continuar el procesamiento de la petición
    * @throws ServletException si ocurre un error durante el procesamiento del servlet
-   * @throws IOException si ocurre un error de entrada/salida
+   * @throws IOException      si ocurre un error de entrada/salida
    */
   @Override
   protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response,

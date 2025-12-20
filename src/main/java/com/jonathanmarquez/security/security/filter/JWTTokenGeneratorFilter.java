@@ -40,11 +40,11 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
    * HTTP-only y el access token también se incluye en el encabezado Authorization.
    * Registra información de depuración sobre el proceso de generación de tokens.</p>
    *
-   * @param request petición HTTP actual
-   * @param response respuesta HTTP donde se establecerán las cookies y encabezados con los tokens
+   * @param request     petición HTTP actual
+   * @param response    respuesta HTTP donde se establecerán las cookies y encabezados con los tokens
    * @param filterChain cadena de filtros para continuar el procesamiento de la petición
    * @throws ServletException sí ocurre un error durante el procesamiento del servlet
-   * @throws IOException sí ocurre un error de entrada/salida
+   * @throws IOException      sí ocurre un error de entrada/salida
    */
   @Override
   protected void doFilterInternal(@NonNull HttpServletRequest request,

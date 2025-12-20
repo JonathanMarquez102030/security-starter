@@ -29,11 +29,11 @@ public class CsrfCookieFilter extends OncePerRequestFilter {
    * Spring Security solo genera y envía el token CSRF de forma lazy cuando se accede a él
    * explícitamente. Después de forzar la generación, continúa la cadena de filtros normalmente.</p>
    *
-   * @param request petición HTTP actual
-   * @param response respuesta HTTP donde se establecerá la cookie del token CSRF
+   * @param request     petición HTTP actual
+   * @param response    respuesta HTTP donde se establecerá la cookie del token CSRF
    * @param filterChain cadena de filtros para continuar el procesamiento de la petición
    * @throws ServletException sí ocurre un error durante el procesamiento del servlet
-   * @throws IOException sí ocurre un error de entrada/salida
+   * @throws IOException      sí ocurre un error de entrada/salida
    */
   @Override
   protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response,

@@ -20,7 +20,7 @@ public interface UserProfileService {
    * Crea un nuevo usuario en el sistema con los roles especificados.
    *
    * @param registerRequestDto datos de registro del usuario incluyendo email, contraseña y datos del perfil
-   * @param roles lista de roles a asignar al nuevo usuario
+   * @param roles              lista de roles a asignar al nuevo usuario
    * @return perfil del usuario recién creado
    */
   UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles);
@@ -44,7 +44,7 @@ public interface UserProfileService {
   /**
    * Actualiza la contraseña de un usuario aplicando cifrado.
    *
-   * @param email dirección de correo electrónico del usuario
+   * @param email          dirección de correo electrónico del usuario
    * @param newRawPassword nueva contraseña en texto plano que será cifrada
    */
   void updatePassword(String email, String newRawPassword);
@@ -67,7 +67,7 @@ public interface UserProfileService {
   /**
    * Habilita o deshabilita la cuenta de un usuario.
    *
-   * @param email dirección de correo electrónico del usuario
+   * @param email   dirección de correo electrónico del usuario
    * @param enabled true para habilitar la cuenta, false para deshabilitarla
    */
   void setEnabled(String email, boolean enabled);
@@ -83,7 +83,7 @@ public interface UserProfileService {
   /**
    * Marca el correo electrónico del usuario como verificado o no verificado.
    *
-   * @param email dirección de correo electrónico del usuario
+   * @param email    dirección de correo electrónico del usuario
    * @param verified true para marcar como verificado, false para marcar como no verificado
    */
   void setEmailVerified(String email, boolean verified);

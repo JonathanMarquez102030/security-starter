@@ -71,8 +71,8 @@ public class MePasswordController {
    * una nueva autenticación con las credenciales actualizadas.</p>
    *
    * @param authentication objeto de autenticación de Spring Security con información del usuario actual
-   * @param request datos de la solicitud conteniendo contraseña actual, nueva contraseña, confirmación y código OTP
-   * @param response objeto de respuesta HTTP donde se eliminarán las cookies de autenticación
+   * @param request        datos de la solicitud conteniendo contraseña actual, nueva contraseña, confirmación y código OTP
+   * @param response       objeto de respuesta HTTP donde se eliminarán las cookies de autenticación
    * @return respuesta exitosa indicando que la contraseña ha sido cambiada
    * @throws UserNotAuthenticatedException si el usuario no está autenticado o la autenticación es nula
    */

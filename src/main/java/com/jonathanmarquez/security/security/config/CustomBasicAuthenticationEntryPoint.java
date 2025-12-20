@@ -42,8 +42,8 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
    * y establece encabezados HTTP con la razón del error. La respuesta incluye detalles adicionales
    * según el perfil activo y se escribe en formato JSON con codificación UTF-8.</p>
    *
-   * @param request solicitud HTTP que generó la excepción de autenticación
-   * @param response respuesta HTTP donde se escribirá el error en formato JSON
+   * @param request       solicitud HTTP que generó la excepción de autenticación
+   * @param response      respuesta HTTP donde se escribirá el error en formato JSON
    * @param authException excepción de autenticación lanzada durante el proceso de autenticación
    * @throws IOException si ocurre un error al escribir la respuesta
    */
@@ -112,7 +112,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
    * Registro que encapsula la información de un error de autenticación.
    *
    * @param message mensaje descriptivo del error para mostrar al usuario
-   * @param reason razón técnica del error para uso en encabezados HTTP y logs
+   * @param reason  razón técnica del error para uso en encabezados HTTP y logs
    */
   private record ErrorInfo(String message, String reason) {
   }

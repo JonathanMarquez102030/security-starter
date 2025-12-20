@@ -69,7 +69,7 @@ public class PasswordController {
    * un token JWT de restablecimiento con tiempo de vida limitado y lo almacena en una
    * cookie HTTP-only segura para su uso en el paso final del proceso.</p>
    *
-   * @param request datos de la solicitud conteniendo el correo electrónico y código OTP
+   * @param request  datos de la solicitud conteniendo el correo electrónico y código OTP
    * @param response objeto de respuesta HTTP donde se establecerá la cookie con el token
    * @return respuesta exitosa indicando que el token ha sido emitido
    * @throws InvalidOtpException si el código OTP es inválido, expirado o no existe
@@ -95,14 +95,14 @@ public class PasswordController {
    * la contraseña del usuario. Tras el restablecimiento exitoso, elimina la cookie del token
    * y todos los códigos OTP asociados al usuario.</p>
    *
-   * @param request datos de la solicitud conteniendo la nueva contraseña y su confirmación
-   * @param httpServletRequest objeto de solicitud HTTP del cual se extraerá la cookie con el token
+   * @param request             datos de la solicitud conteniendo la nueva contraseña y su confirmación
+   * @param httpServletRequest  objeto de solicitud HTTP del cual se extraerá la cookie con el token
    * @param httpServletResponse objeto de respuesta HTTP donde se eliminará la cookie del token
    * @return respuesta exitosa indicando que la contraseña ha sido restablecida
    * @throws InvalidPasswordResetTokenException si el token es inválido, expirado o no existe
-   * @throws PasswordMismatchException si las contraseñas no coinciden
-   * @throws PasswordPolicyException si la contraseña no cumple con las políticas de seguridad
-   * @throws PasswordReuseNotAllowedException si la nueva contraseña es igual a la anterior
+   * @throws PasswordMismatchException          si las contraseñas no coinciden
+   * @throws PasswordPolicyException            si la contraseña no cumple con las políticas de seguridad
+   * @throws PasswordReuseNotAllowedException   si la nueva contraseña es igual a la anterior
    */
   @PostMapping("/reset")
   public ResponseEntity<SuccessApiResponse<Void>> resetPassword(

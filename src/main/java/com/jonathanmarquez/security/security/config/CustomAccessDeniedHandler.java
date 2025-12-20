@@ -37,8 +37,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
    * perfil activo. Establece encabezados HTTP apropiados y escribe la respuesta en formato
    * JSON con codificación UTF-8.</p>
    *
-   * @param request solicitud HTTP que generó la excepción de acceso denegado
-   * @param response respuesta HTTP donde se escribirá el error en formato JSON
+   * @param request               solicitud HTTP que generó la excepción de acceso denegado
+   * @param response              respuesta HTTP donde se escribirá el error en formato JSON
    * @param accessDeniedException excepción lanzada cuando el acceso es denegado
    * @throws IOException si ocurre un error al escribir la respuesta
    */

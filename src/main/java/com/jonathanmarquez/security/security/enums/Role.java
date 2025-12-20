@@ -29,7 +29,7 @@ public enum Role {
   /**
    * Constructor privado para inicializar los valores del rol.
    *
-   * @param groupName nombre del grupo asociado al rol
+   * @param groupName   nombre del grupo asociado al rol
    * @param description descripción del rol y sus permisos
    */
   Role(String groupName, String description) {

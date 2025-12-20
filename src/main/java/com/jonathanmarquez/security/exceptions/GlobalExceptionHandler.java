@@ -616,7 +616,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return switch (ex) {
       case HttpRequestMethodNotSupportedException ignored -> "Método HTTP no permitido para este endpoint";
 
-      case HttpMediaTypeNotSupportedException ignored -> "Tipo de contenido no soportado. Use 'application/json'";
+      case HttpMediaTypeNotSupportedException ignored -> "Tipo de contenido no soportado.";
 
       case HttpMediaTypeNotAcceptableException ignored ->
           "El servidor no puede generar una respuesta en el formato solicitado";

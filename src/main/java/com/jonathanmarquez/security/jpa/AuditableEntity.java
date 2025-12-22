@@ -1,11 +1,10 @@
 package com.jonathanmarquez.security.jpa;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -38,4 +37,8 @@ public abstract class AuditableEntity {
   @LastModifiedBy
   @Column(name = "last_modified_by")
   private String lastModifiedBy;
+
+  @Setter
+  @Enumerated(EnumType.STRING)
+  private EntityStatus status;
 }

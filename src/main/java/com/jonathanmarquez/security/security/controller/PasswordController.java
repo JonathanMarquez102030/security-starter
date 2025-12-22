@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/auth/password")
+@RequestMapping("/auth/password")
 @RequiredArgsConstructor
 public class PasswordController {
 

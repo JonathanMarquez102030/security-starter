@@ -32,6 +32,13 @@ otp:
   resend-cooldown-seconds: 60
 
 # ===========================
+# Configuración del Servidor
+# ===========================
+server:
+  servlet:
+    context-path: /api/v1
+
+# ===========================
 # Configuración de Seguridad
 # ===========================
 security:

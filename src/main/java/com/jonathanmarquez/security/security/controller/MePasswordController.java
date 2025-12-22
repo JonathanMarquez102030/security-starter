@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * requerir nueva autenticación con las credenciales actualizadas.</p>
  */
 @RestController
-@RequestMapping("/api/me/password")
+@RequestMapping("/me/password")
 @RequiredArgsConstructor
 public class MePasswordController {
 

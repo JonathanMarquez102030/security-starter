@@ -98,15 +98,15 @@ public class DevSecurityConfig {
     http.csrf(csrf -> csrf
         .csrfTokenRequestHandler(csrfHandler)
         .ignoringRequestMatchers(
-            "/api/auth/register",
-            "/api/auth/csrf",
-            "/api/auth/refresh",
-            "/api/auth/public/**",
-            "/api/auth/login",
-            "/api/auth/logout",
-            "/api/auth/verify",
-            "/api/auth/resend-otp",
-            "/api/auth/password/**"
+            "/api/v1/auth/register",
+            "/api/v1/auth/csrf",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/public/**",
+            "/api/v1/auth/login",
+            "/api/v1/auth/logout",
+            "/api/v1/auth/verify",
+            "/api/v1/auth/resend-otp",
+            "/api/v1/auth/password/**"
         )
         .csrfTokenRepository(tokenRepository)
     );
@@ -122,19 +122,19 @@ public class DevSecurityConfig {
   private void configureAuthorization(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers(
-            "/api/auth/register",
-            "/api/auth/csrf",
-            "/api/auth/refresh",
-            "/api/auth/public/**",
-            "/api/auth/verify",
-            "/api/auth/resend-otp",
-            "/api/auth/password/**",
+            "/api/v1/auth/register",
+            "/api/v1/auth/csrf",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/public/**",
+            "/api/v1/auth/verify",
+            "/api/v1/auth/resend-otp",
+            "/api/v1/auth/password/**",
             "/error",
-            "/api/test/**"
+            "/api/v1/test/**"
         ).permitAll()
-        .requestMatchers("/api/auth/login", "/api/auth/me", "/api/me/**", "/api/auth/logout").authenticated()
-        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/me", "/api/v1/me/**", "/api/v1/auth/logout").authenticated()
+        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+        .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
         .anyRequest().authenticated()
     );
   }

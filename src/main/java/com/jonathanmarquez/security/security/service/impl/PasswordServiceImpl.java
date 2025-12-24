@@ -38,7 +38,7 @@ public class PasswordServiceImpl implements PasswordService {
       otpService.resendOtp(email, OtpPurpose.PASSWORD_RESET);
     } catch (ResendCooldownException ex) {
       log.debug("Cooldown activo en forgot-password para email (no expuesto).");
-      throw new ResendCooldownException("Cooldown activo en forgot-password para email (no expuesto).");
+      throw ex;
     } catch (Exception ex) {
       log.warn("No se pudo enviar OTP de forgot-password (no expuesto).");
     }

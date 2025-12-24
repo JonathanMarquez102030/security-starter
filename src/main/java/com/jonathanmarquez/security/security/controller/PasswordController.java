@@ -84,6 +84,7 @@ public class PasswordController {
 
     cookieUtil.createPasswordResetTokenCookie(response, resetToken);
 
+    log.info("Token de reestablecimiento de contraseña emitido con éxito para el usuario: {}", request.email());
     return apiResponseFactory.ok(ResponseMessages.PASSWORD_RESET_TOKEN_ISSUED);
   }
 

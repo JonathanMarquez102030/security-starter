@@ -98,15 +98,15 @@ public class DevSecurityConfig {
     http.csrf(csrf -> csrf
         .csrfTokenRequestHandler(csrfHandler)
         .ignoringRequestMatchers(
-            "/api/v1/auth/register",
-            "/api/v1/auth/csrf",
-            "/api/v1/auth/refresh",
-            "/api/v1/auth/public/**",
-            "/api/v1/auth/login",
-            "/api/v1/auth/logout",
-            "/api/v1/auth/verify",
-            "/api/v1/auth/resend-otp",
-            "/api/v1/auth/password/**"
+            "/auth/register",
+            "/auth/csrf",
+            "/auth/refresh",
+            "/auth/public/**",
+            "/auth/login",
+            "/auth/logout",
+            "/auth/verify",
+            "/auth/resend-otp",
+            "/auth/password/**"
         )
         .csrfTokenRepository(tokenRepository)
     );
@@ -122,19 +122,19 @@ public class DevSecurityConfig {
   private void configureAuthorization(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(auth -> auth
         .requestMatchers(
-            "/api/v1/auth/register",
-            "/api/v1/auth/csrf",
-            "/api/v1/auth/refresh",
-            "/api/v1/auth/public/**",
-            "/api/v1/auth/verify",
-            "/api/v1/auth/resend-otp",
-            "/api/v1/auth/password/**",
+            "/auth/register",
+            "/auth/csrf",
+            "/auth/refresh",
+            "/auth/public/**",
+            "/auth/verify",
+            "/auth/resend-otp",
+            "/auth/password/**",
             "/error",
-            "/api/v1/test/**"
+            "/test/**"
         ).permitAll()
-        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/me", "/api/v1/me/**", "/api/v1/auth/logout").authenticated()
-        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-        .requestMatchers("/api/v1/user/**").hasAnyRole("USER", "ADMIN")
+        .requestMatchers("/auth/login", "/auth/me", "/me/**", "/auth/logout").authenticated()
+        .requestMatchers("/admin/**").hasRole("ADMIN")
+        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
         .anyRequest().authenticated()
     );
   }

@@ -39,7 +39,7 @@ public class VerificationController {
    * Verifica un código OTP.
    * <p>
    * POST /api/auth/verify
-   * Body: { "email": "user@example.com", "code": "123456" }
+   * Body: { "email": "user@example.com", "otpCode": "123456" }
    *
    * @param request verificación request
    * @return respuesta de verificación
@@ -50,7 +50,7 @@ public class VerificationController {
 
     log.info("Solicitud de verificación OTP para email: {}", request.email());
 
-    otpService.verifyOtp(request.email(), request.code(), OtpPurpose.EMAIL_VERIFICATION);
+    otpService.verifyOtp(request.email(), request.otpCode(), OtpPurpose.EMAIL_VERIFICATION);
 
     userProfileService.setEmailVerified(request.email(), true);
 

@@ -15,7 +15,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "otp_tokens", indexes = {
     @Index(name = "idx_otp_email", columnList = "email"),
-    @Index(name = "idx_otp_code", columnList = "code")
+    @Index(name = "idx_otp_code", columnList = "otpCode")
 })
 @Getter
 @Setter

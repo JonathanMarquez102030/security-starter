@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record VerifyForgotPasswordOtpRequestDto(
+
     @NotBlank @Email String email,
-    @NotBlank
+
+    @NotBlank(message = "El código OTP es requerido")
     @Pattern(regexp = "^[0-9]{6}$", message = "El OTP debe tener 6 dígitos")
     String otpCode
 ) {

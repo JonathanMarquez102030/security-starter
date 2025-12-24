@@ -15,6 +15,6 @@ public record VerifyOtpRequestDto(
 
     @NotBlank(message = "El código OTP es requerido")
     @Pattern(regexp = "^\\d{6}$", message = "El código OTP debe ser de 6 dígitos numéricos")
-    String code
+    String otpCode
 ) {
 }

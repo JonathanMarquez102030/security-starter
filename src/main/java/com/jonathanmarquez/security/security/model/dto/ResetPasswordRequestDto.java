@@ -4,7 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record ResetPasswordRequestDto(
-    @NotBlank @Size(min = 8, max = 200) String newPassword,
-    @NotBlank @Size(min = 8, max = 200) String confirmPassword
+    @NotBlank(message = "La contraseña es requerida")
+    @Size(min = 8, max = 200) String newPassword,
+
+    @NotBlank(message = "La confirmación de la contraseña es requerida")
+    @Size(min = 8, max = 200) String confirmPassword
 ) {
 }

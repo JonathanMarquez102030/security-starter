@@ -93,6 +93,7 @@ public class DevSecurityConfig {
     tokenRepository.setCookieCustomizer(cookie ->
                                             cookie.secure(false)  // Permite HTTP en desarrollo
                                                   .sameSite("Strict")
+                                                .path("/")
     );
 
     http.csrf(csrf -> csrf

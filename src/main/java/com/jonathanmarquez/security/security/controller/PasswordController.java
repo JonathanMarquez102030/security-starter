@@ -116,6 +116,8 @@ public class PasswordController {
     passwordService.resetPassword(resetToken, request.newPassword(), request.confirmPassword());
     cookieUtil.deletePasswordResetTokenCookie(httpServletResponse);
 
+    log.info("Contraseña restablecida exitosamente para el usuario: {}", httpServletRequest.getRemoteUser());
+
     return apiResponseFactory.ok(ResponseMessages.PASSWORD_RESET_SUCCESS);
   }
 }

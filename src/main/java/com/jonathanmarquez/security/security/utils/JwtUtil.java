@@ -22,7 +22,7 @@ public class JwtUtil {
 
   private final Environment env;
 
-  @Value("${spring.application.name}")
+  @Value("${spring.application.name:security-jwt-spring-boot-starter-library}")
   private String appName;
 
   //JWT CLAIMS

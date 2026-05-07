@@ -3,6 +3,7 @@ package com.jonathanmarquez.security.autoconfigure;
 import com.jonathanmarquez.security.email_verification.controller.VerificationController;
 import com.jonathanmarquez.security.email_verification.service.EmailService;
 import com.jonathanmarquez.security.email_verification.service.OtpService;
+import com.jonathanmarquez.security.email_verification.service.impl.NoOpOtpService;
 import com.jonathanmarquez.security.exceptions.response.ApiResponseFactory;
 import com.jonathanmarquez.security.security.config.SecurityProperties;
 import com.jonathanmarquez.security.security.controller.AuthController;
@@ -51,7 +52,15 @@ public class SecurityControllersAutoConfiguration {
     // ── Servicios ─────────────────────────────────────────────────────────────────
 
     @Bean
+    @ConditionalOnMissingBean(OtpService.class)   // solo si OtpAutoConfiguration NO cargó
+    public OtpService noOpOtpService() {
+        return new NoOpOtpService();
+    }
+
+
+    @Bean
     @ConditionalOnMissingBean
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public UserProfileService userProfileService(
             JdbcTemplate jdbcTemplate,
             UserProfileRepository userProfileRepository,
@@ -115,7 +124,8 @@ public class SecurityControllersAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnBean(OtpService.class)   // solo si OtpAutoConfiguration cargó el OtpService
+    @ConditionalOnBean(EmailService.class)
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public VerificationController verificationController(
             OtpService otpService,
             UserProfileService userProfileService,

@@ -2,11 +2,11 @@ package com.jonathanmarquez.security.jpa;
 
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
@@ -14,7 +14,6 @@ import java.util.Optional;
  * Implementación de AuditorAware que proporciona el ID del usuario autenticado actual para la auditoría JPA.
  * Esta clase se utiliza para completar automáticamente los campos creado_por y modificado_por en entidades auditadas.
  */
-@Component
 public class UserAccountAuditorAware implements AuditorAware<String> {
 
   /**
@@ -27,6 +26,7 @@ public class UserAccountAuditorAware implements AuditorAware<String> {
    * - Principal no es una instancia de SecurityUserDetails
    */
   @Override
+  @NonNull
   public Optional<String> getCurrentAuditor() {
     return Optional.ofNullable(SecurityContextHolder.getContext())
                    .map(SecurityContext::getAuthentication)

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +17,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-@Component
 public class JwtUtil {
 
 
@@ -123,6 +121,7 @@ public class JwtUtil {
   /**
    * Extrae jti del token (si existe).
    */
+  @SuppressWarnings("unused")
   public String extractJti(String token) {
     return extractClaim(token, claims -> String.valueOf(claims.get(JTI)));
   }
@@ -146,6 +145,7 @@ public class JwtUtil {
   /**
    * Valida si el token es válido (no expirado y tipo correcto).
    */
+  @SuppressWarnings("unused")
   public Boolean isTokenValid(String token) {
     try {
       return !isTokenExpired(token);

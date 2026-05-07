@@ -1,8 +1,6 @@
 package com.jonathanmarquez.security.utils;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +16,6 @@ import java.util.stream.Collectors;
  * decisiones sobre logging, configuración de seguridad, o características específicas
  * del entorno.</p>
  */
-@Component
 public class ProfileDetector {
 
   private final Environment env;
@@ -28,7 +25,6 @@ public class ProfileDetector {
    *
    * @param env objeto Environment para acceder a los perfiles activos
    */
-  @Autowired
   public ProfileDetector(Environment env) {
     this.env = env;
   }
@@ -54,6 +50,7 @@ public class ProfileDetector {
    * @param profileNames nombres de los perfiles a verificar
    * @return true si al menos uno de los perfiles está activo, false si ninguno lo está
    */
+  @SuppressWarnings("unused")
   public boolean isAnyProfileActive(String... profileNames) {
     Set<String> targetProfiles = Arrays.stream(profileNames)
                                        .map(String::toLowerCase)
@@ -72,6 +69,7 @@ public class ProfileDetector {
    * @param profileNames nombres de los perfiles a verificar
    * @return true si todos los perfiles están activos, false si falta alguno
    */
+  @SuppressWarnings("unused")
   public boolean areAllProfilesActive(String... profileNames) {
     Set<String> targetProfiles = Arrays.stream(profileNames)
                                        .map(String::toLowerCase)
@@ -89,6 +87,7 @@ public class ProfileDetector {
    *
    * @return lista con los nombres de los perfiles activos
    */
+  @SuppressWarnings("unused")
   public List<String> getActiveProfiles() {
     return Arrays.asList(env.getActiveProfiles());
   }

@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -21,7 +20,6 @@ import java.util.List;
  * 2. Datos de perfil extendidos desde user_profiles (JPA)
  */
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 

@@ -4,21 +4,19 @@ import com.jonathanmarquez.security.security.enums.SpringProfile;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 
-@Component
 @Slf4j
+@RequiredArgsConstructor
 public class CookieUtil {
 
   private static final String ACCESS_TOKEN_COOKIE = "accessToken";
   private static final String REFRESH_TOKEN_COOKIE = "refreshToken";
   private static final String PWD_RESET_TOKEN_COOKIE = "pwdResetToken";
 
-  @Autowired
-  private Environment env;
+  private final Environment env;
 
   /**
    * Crea una cookie segura para el Access Token.

@@ -1,1 +1,2 @@
 com.jonathanmarquez.security.autoconfigure.SecurityJwtAutoConfiguration
+com.jonathanmarquez.security.autoconfigure.SecurityCoreAutoConfiguration

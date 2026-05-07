@@ -31,7 +31,6 @@ import java.util.Optional;
  * - Asigna authorities
  * - Crea perfil extendido en 'user_profiles' (JPA)
  */
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserProfileServiceImpl implements UserProfileService {

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
  * Implementación del servicio de email usando Spring Mail.
  */
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class EmailServiceImpl implements EmailService {
 

@@ -25,7 +25,6 @@ import java.util.Map;
  * Implementación del servicio de gestión de OTP.
  */
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class OtpServiceImpl implements OtpService {
 

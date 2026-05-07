@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class PasswordServiceImpl implements PasswordService {
 

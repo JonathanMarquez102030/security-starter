@@ -13,7 +13,7 @@ import org.mapstruct.Mapper;
  * La configuración componentModel = "spring" permite que MapStruct genere un bean de Spring
  * que puede ser inyectado mediante el contenedor de dependencias.</p>
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "default")
 public abstract class UserProfileMapper {
 
   /**

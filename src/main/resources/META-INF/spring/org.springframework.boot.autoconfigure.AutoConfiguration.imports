@@ -1,2 +1,4 @@
 com.jonathanmarquez.security.autoconfigure.SecurityJwtAutoConfiguration
 com.jonathanmarquez.security.autoconfigure.SecurityCoreAutoConfiguration
+com.jonathanmarquez.security.autoconfigure.SecurityFilterChainAutoConfiguration
+com.jonathanmarquez.security.autoconfigure.ExceptionHandlingAutoConfiguration

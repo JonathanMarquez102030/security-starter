@@ -11,7 +11,7 @@ ON CONFLICT (username) DO NOTHING;
 
 -- Usuario normal
 INSERT INTO users (username, password, enabled)
-VALUES ('user', '{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW',
+VALUES ('user', '{bcrypt}$2a$12$tOwNzQC2I5/16sum5vfVwOGfi8.i2h.gUIwlM3G3Qlx5F0GHgs/qK',
         TRUE)
 ON CONFLICT (username) DO NOTHING;
 

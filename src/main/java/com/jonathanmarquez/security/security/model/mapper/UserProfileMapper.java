@@ -44,3 +44,4 @@ public abstract class UserProfileMapper {
   @Mapping(target = "isEmailVerified", ignore = true)
   public abstract UserProfile toUserProfile(UserProfileDto userProfileDto);
 }
+

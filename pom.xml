@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.jonathanmarquez</groupId>
-    <artifactId>security-jwt-spring-boot-starter</artifactId>
+    <artifactId>security-starter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>Security JWT Spring Boot Starter</name>
+    <name>security-starter</name>
     <description>Auto-configuration for JWT authentication, JDBC user management, OTP email verification and global
         exception handling.
     </description>

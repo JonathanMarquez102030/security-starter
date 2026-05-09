@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2026 Jonathan Márquez Pérez.
+ * Licensed under the MIT License. See LICENSE file in the project root for full license information.
+ */
 package com.jonathanmarquez.security.exceptions.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;

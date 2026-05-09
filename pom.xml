@@ -12,6 +12,26 @@
         exception handling.
     </description>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>jonathanmarquezperez</id>
+            <name>Jonathan Marquez Perez</name>
+            <email>jmp19731@gmail.com</email>
+            <roles>
+                <role>Lead Developer</role>
+                <role>Software Engineer</role>
+            </roles>
+            <timezone>America/Mexico_City</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>21</java.version>

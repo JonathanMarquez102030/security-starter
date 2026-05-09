@@ -15,12 +15,14 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
@@ -31,6 +33,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
     SecurityJwtAutoConfiguration.class
 })
 @ConditionalOnWebApplication
+@EnableJpaRepositories(basePackages = "com.jonathanmarquezperez.security.security.repository")
+@EntityScan(basePackages = "com.jonathanmarquezperez.security.security.model")
 @Import(SecurityCoreAutoConfiguration.JpaAuditingConfiguration.class)
 public class SecurityCoreAutoConfiguration {
 

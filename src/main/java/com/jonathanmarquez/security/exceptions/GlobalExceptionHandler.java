@@ -121,7 +121,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus httpStatus = HttpStatus.valueOf(statusCode.value());
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         httpStatus,
         buildUserFriendlyMessage(ex, httpStatus),
         getPath(request),
@@ -146,7 +145,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                                        ex.getMessage()));
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         ex.getMessage(),
         getPath(request),
@@ -205,7 +203,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                                                          "Authentication failed: " + ex.getMessage());
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         ex.getStatus(),
         ex.getMessage(),
         getPath(request),
@@ -229,7 +226,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         cer.getStatus(),
         ex.getMessage(),
         getPath(request),
@@ -260,7 +256,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       Exception ex, WebRequest request) {
 
     return switch (ex) {
-      case BadSqlGrammarException e -> handleSqlGrammarError(e, request);
       case InvalidDataAccessResourceUsageException e -> handleSqlGrammarError(e, request);
       case SQLGrammarException e -> handleSqlGrammarError(e, request);
       case JpaSystemException e -> handleJpaSystemError(e, request);
@@ -284,7 +279,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     String cleanedSqlError = extractSqlErrorMessage(ex);
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         buildUserFriendlyMessage(ex, status),
         getPath(request),
@@ -307,7 +301,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     String cleanedError = extractErrorMessage(ex);
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         buildUserFriendlyMessage(ex, status),
         getPath(request),
@@ -329,7 +322,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.CONFLICT;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         buildUserFriendlyMessage(ex, status),
         getPath(request),
@@ -351,7 +343,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         buildUserFriendlyMessage(ex, status),
         getPath(request),
@@ -397,7 +388,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     String cleanedError = extractErrorMessage(ex);
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         "Error de configuración en las validaciones",
         getPath(request),
@@ -425,7 +415,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                           .collect(Collectors.joining(", "));
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         "Violación de restricciones de validación",
         getPath(request),
@@ -458,7 +447,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                             .collect(Collectors.joining(", "));
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         errorDetails,
         getPath(request),
@@ -485,7 +473,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.BAD_REQUEST;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         ex.getMessage(),
         getPath(request),
@@ -507,7 +494,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.GONE;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         ex.getMessage(),
         getPath(request),
@@ -530,7 +516,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.GONE;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         ex.getMessage(),
         getPath(request),
@@ -553,7 +538,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     HttpStatus status = HttpStatus.GONE;
 
     ErrorApiResponse response = createErrorResponse(
-        ex,
         status,
         ex.getMessage(),
         getPath(request),
@@ -572,7 +556,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * Función central para crear respuestas de error estandarizadas.
    * Similar al patrón usado internamente por Spring en ResponseEntityExceptionHandler.
    *
-   * @param ex      la excepción
    * @param status  el código de estado HTTP
    * @param message mensaje para el usuario
    * @param path    la ruta del request
@@ -580,7 +563,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
    * @return ErrorApiResponse construida
    */
   private ErrorApiResponse createErrorResponse(
-      Exception ex,
       HttpStatus status,
       String message,
       String path,

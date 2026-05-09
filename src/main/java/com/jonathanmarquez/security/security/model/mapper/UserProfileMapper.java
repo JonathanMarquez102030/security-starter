@@ -7,6 +7,7 @@ package com.jonathanmarquez.security.security.model.mapper;
 import com.jonathanmarquez.security.security.model.UserProfile;
 import com.jonathanmarquez.security.security.model.dto.UserProfileDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 /**
  * Mapper de MapStruct para conversiones entre entidad UserProfile y su DTO.
@@ -40,5 +41,6 @@ public abstract class UserProfileMapper {
    * @param userProfileDto DTO con los datos del perfil de usuario
    * @return entidad de dominio UserProfile
    */
+  @Mapping(target = "isEmailVerified", ignore = true)
   public abstract UserProfile toUserProfile(UserProfileDto userProfileDto);
 }

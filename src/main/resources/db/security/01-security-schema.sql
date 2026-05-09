@@ -1,6 +1,6 @@
 -- =============================================================================
 -- Spring Security Standard Tables Schema
--- Compatible con PostgreSQL y JDBCUserDetailsManager
+-- Compatible con PostgreSQL 10+, Oracle 12c+, SQL Server 2012+, H2 2.x, DB2 9.7+
 -- =============================================================================
 
 -- Tabla principal de usuarios
@@ -47,7 +47,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS ix_auth_username
 CREATE TABLE IF NOT EXISTS groups
 (
     id
-    BIGSERIAL
+    BIGINT GENERATED ALWAYS AS IDENTITY
     PRIMARY
     KEY,
     group_name
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS group_authorities
 CREATE TABLE IF NOT EXISTS group_members
 (
     id
-    BIGSERIAL
+    BIGINT GENERATED ALWAYS AS IDENTITY
     PRIMARY
     KEY,
     username

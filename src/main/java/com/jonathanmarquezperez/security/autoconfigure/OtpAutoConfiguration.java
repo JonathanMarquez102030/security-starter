@@ -11,6 +11,7 @@ import com.jonathanmarquezperez.security.email_verification.service.OtpService;
 import com.jonathanmarquezperez.security.email_verification.service.impl.EmailServiceImpl;
 import com.jonathanmarquezperez.security.email_verification.service.impl.OtpServiceImpl;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -28,12 +29,14 @@ public class OtpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(JavaMailSender.class)
     public EmailService emailService(JavaMailSender mailSender) {
         return new EmailServiceImpl(mailSender);
     }
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnBean(EmailService.class)
     public OtpService otpService(
             OtpTokenRepository otpTokenRepository,
             EmailService emailService,

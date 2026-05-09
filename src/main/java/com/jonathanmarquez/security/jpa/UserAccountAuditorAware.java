@@ -6,7 +6,7 @@ package com.jonathanmarquez.security.jpa;
 
 import com.jonathanmarquez.security.security.model.SecurityUserDetails;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.lang.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -32,7 +32,7 @@ public class UserAccountAuditorAware implements AuditorAware<String> {
   @Override
   @NonNull
   public Optional<String> getCurrentAuditor() {
-    return Optional.ofNullable(SecurityContextHolder.getContext())
+    return Optional.of(SecurityContextHolder.getContext())
                    .map(SecurityContext::getAuthentication)
                    .filter(Authentication::isAuthenticated)
                    .filter(auth -> !(auth instanceof AnonymousAuthenticationToken))

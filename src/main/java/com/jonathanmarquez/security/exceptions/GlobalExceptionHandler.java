@@ -4,7 +4,7 @@
  */
 package com.jonathanmarquez.security.exceptions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import com.jonathanmarquez.security.email_verification.exception.InvalidOtpException;
 import com.jonathanmarquez.security.email_verification.exception.OtpExpiredException;
 import com.jonathanmarquez.security.email_verification.exception.OtpMaxAttemptsException;
@@ -32,8 +32,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.access.AccessDeniedException;
@@ -704,7 +704,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       case SocketTimeoutException ignored -> "Tiempo de espera agotado en la conexión";
 
       // Excepciones de JSON/Serialización
-      case JsonProcessingException ignored -> "Error al procesar formato JSON";
+      case JacksonException ignored -> "Error al procesar formato JSON";
 
       // Excepciones de Recursos
       case FileNotFoundException ignored -> "Archivo no encontrado";

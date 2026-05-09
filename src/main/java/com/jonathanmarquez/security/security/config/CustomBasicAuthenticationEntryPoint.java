@@ -4,8 +4,8 @@
  */
 package com.jonathanmarquez.security.security.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.jspecify.annotations.NonNull;
+import tools.jackson.databind.ObjectMapper;
 import com.jonathanmarquez.security.email_verification.exception.EmailNotVerifiedException;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
@@ -36,7 +36,7 @@ import java.time.LocalDateTime;
 public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   private final ProfileDetector profileDetector;
-  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  private final ObjectMapper objectMapper;
 
   /**
    * Maneja las excepciones de autenticación generando una respuesta JSON con el error específico.
@@ -52,7 +52,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
    * @throws IOException si ocurre un error al escribir la respuesta
    */
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+  public void commence(HttpServletRequest request, HttpServletResponse response, @NonNull AuthenticationException authException)
       throws IOException {
 
     HttpStatus status = HttpStatus.UNAUTHORIZED;

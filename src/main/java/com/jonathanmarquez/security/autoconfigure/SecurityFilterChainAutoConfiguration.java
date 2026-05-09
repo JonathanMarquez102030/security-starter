@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
+import tools.jackson.databind.ObjectMapper;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,14 +42,16 @@ public class SecurityFilterChainAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CustomBasicAuthenticationEntryPoint authenticationEntryPoint(ProfileDetector profileDetector) {
-        return new CustomBasicAuthenticationEntryPoint(profileDetector);
+    public CustomBasicAuthenticationEntryPoint authenticationEntryPoint(ProfileDetector profileDetector,
+                                                                        ObjectMapper objectMapper) {
+        return new CustomBasicAuthenticationEntryPoint(profileDetector, objectMapper);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public CustomAccessDeniedHandler accessDeniedHandler(ProfileDetector profileDetector) {
-        return new CustomAccessDeniedHandler(profileDetector);
+    public CustomAccessDeniedHandler accessDeniedHandler(ProfileDetector profileDetector,
+                                                         ObjectMapper objectMapper) {
+        return new CustomAccessDeniedHandler(profileDetector, objectMapper);
     }
 
     // ── SecurityFilterChain ───────────────────────────────────────────────────────
@@ -62,7 +65,7 @@ public class SecurityFilterChainAutoConfiguration {
             UserDetailsService userDetailsService,
             CustomBasicAuthenticationEntryPoint authenticationEntryPoint,
             CustomAccessDeniedHandler accessDeniedHandler,
-            SecurityProperties props) throws Exception {
+            SecurityProperties props) {
 
         // 1. Sesión stateless
         http.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -118,14 +121,14 @@ public class SecurityFilterChainAutoConfiguration {
         };
     }
 
-    private void configureCsrf(HttpSecurity http, SecurityProperties props) throws Exception {
+    private void configureCsrf(HttpSecurity http, SecurityProperties props) {
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
         csrfHandler.setCsrfRequestAttributeName("_csrf");
 
         CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         tokenRepository.setCookieCustomizer(cookie -> cookie
-            .secure(props.getCookie().isSecure())     // antes: hardcodeado false
-            .sameSite(props.getCookie().getSameSite()) // antes: hardcodeado "Lax"
+            .secure(props.getCookie().isSecure())
+            .sameSite(props.getCookie().getSameSite())
             .path("/")
         );
 

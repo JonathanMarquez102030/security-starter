@@ -4,8 +4,8 @@
  */
 package com.jonathanmarquez.security.security.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.jspecify.annotations.NonNull;
+import tools.jackson.databind.ObjectMapper;
 import com.jonathanmarquez.security.exceptions.helpers.ErrorApiResponseHelper;
 import com.jonathanmarquez.security.exceptions.response.ErrorApiResponse;
 import com.jonathanmarquez.security.utils.ProfileDetector;
@@ -31,7 +31,7 @@ import java.time.LocalDateTime;
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
   private final ProfileDetector profileDetector;
-  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+  private final ObjectMapper objectMapper;
 
   /**
    * Maneja las excepciones de acceso denegado generando una respuesta JSON con el error.
@@ -48,7 +48,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
    */
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response,
-                     AccessDeniedException accessDeniedException) throws IOException {
+                     @NonNull AccessDeniedException accessDeniedException) throws IOException {
     HttpStatus status = HttpStatus.FORBIDDEN;
     String path = request.getRequestURI();
     String message = "No tiene permisos para acceder a este recurso";

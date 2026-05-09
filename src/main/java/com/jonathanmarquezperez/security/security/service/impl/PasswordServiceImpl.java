@@ -1,0 +1,141 @@
+/*
+ * Copyright (c) 2026 Jonathan Márquez Pérez.
+ * Licensed under the MIT License. See LICENSE file in the project root for full license information.
+ */
+package com.jonathanmarquezperez.security.security.service.impl;
+
+import com.jonathanmarquezperez.security.email_verification.exception.ResendCooldownException;
+import com.jonathanmarquezperez.security.email_verification.service.OtpService;
+import com.jonathanmarquezperez.security.exceptions.customexceptions.*;
+import com.jonathanmarquezperez.security.security.enums.OtpPurpose;
+import com.jonathanmarquezperez.security.security.model.dto.ChangePasswordConfirmRequestDto;
+import com.jonathanmarquezperez.security.security.service.PasswordService;
+import com.jonathanmarquezperez.security.security.service.UserProfileService;
+import com.jonathanmarquezperez.security.security.utils.JwtUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.regex.Pattern;
+
+@Slf4j
+@RequiredArgsConstructor
+public class PasswordServiceImpl implements PasswordService {
+
+  private final UserProfileService userProfileService;
+  private final OtpService otpService;
+  private final JwtUtil jwtUtil;
+  private final PasswordEncoder passwordEncoder;
+  private final Environment env;
+
+  @Override
+  public void requestForgotPasswordOtp(String email) {
+    if (!userProfileService.userExists(email)) {
+      return;
+    }
+
+    try {
+      otpService.resendOtp(email, OtpPurpose.PASSWORD_RESET);
+    } catch (ResendCooldownException ex) {
+      log.debug("Cooldown activo en forgot-password para email (no expuesto).");
+      throw ex;
+    } catch (Exception ex) {
+      log.warn("No se pudo enviar OTP de forgot-password (no expuesto).");
+    }
+  }
+
+  @Override
+  public String verifyForgotPasswordOtpAndIssueResetToken(String email, String otpCode) {
+    otpService.verifyOtp(email, otpCode, OtpPurpose.PASSWORD_RESET);
+    return jwtUtil.generatePasswordResetToken(email);
+  }
+
+  @Override
+  @Transactional
+  public void resetPassword(String resetToken, String newPassword, String confirmPassword) {
+    ensurePasswordsMatch(newPassword, confirmPassword);
+    ensurePasswordPolicy(newPassword);
+
+    if (resetToken == null || resetToken.isBlank() || !jwtUtil.isPasswordResetTokenValid(resetToken)) {
+      throw new InvalidPasswordResetTokenException();
+    }
+
+    String email = jwtUtil.extractUsername(resetToken);
+    if (email == null || email.isBlank()) {
+      throw new InvalidPasswordResetTokenException();
+    }
+
+    if (!userProfileService.userExists(email)) {
+      throw new InvalidPasswordResetTokenException();
+    }
+
+    String currentHash = userProfileService.getPasswordHash(email);
+    if (currentHash != null && passwordEncoder.matches(newPassword, currentHash)) {
+      throw new PasswordReuseNotAllowedException();
+    }
+
+    userProfileService.updatePassword(email, newPassword);
+    otpService.deleteAllOtpsByEmail(email);
+  }
+
+  @Override
+  public void requestChangePasswordOtp(String authenticatedEmail) {
+    otpService.resendOtp(authenticatedEmail, OtpPurpose.PASSWORD_CHANGE);
+  }
+
+  @Override
+  public void confirmChangePassword(String authenticatedEmail,
+                                    ChangePasswordConfirmRequestDto passwordChangeDto
+  ) {
+    String newPassword = passwordChangeDto.newPassword();
+    String confirmPassword = passwordChangeDto.confirmPassword();
+    String currentPassword = passwordChangeDto.currentPassword();
+    String otpCode = passwordChangeDto.otpCode();
+
+    ensurePasswordsMatch(newPassword, confirmPassword);
+    ensurePasswordPolicy(newPassword);
+
+    String currentHash = userProfileService.getPasswordHash(authenticatedEmail);
+    if (currentHash == null || currentHash.isBlank()) {
+      throw new CurrentPasswordInvalidException();
+    }
+
+    if (!passwordEncoder.matches(currentPassword, currentHash)) {
+      throw new CurrentPasswordInvalidException();
+    }
+
+    if (passwordEncoder.matches(newPassword, currentHash)) {
+      throw new PasswordReuseNotAllowedException();
+    }
+
+    otpService.verifyOtp(authenticatedEmail, otpCode, OtpPurpose.PASSWORD_CHANGE);
+
+    userProfileService.updatePassword(authenticatedEmail, newPassword);
+    otpService.deleteAllOtpsByEmail(authenticatedEmail);
+  }
+
+  private void ensurePasswordsMatch(String newPassword, String confirmPassword) {
+    if (newPassword == null || !newPassword.equals(confirmPassword)) {
+      throw new PasswordMismatchException();
+    }
+  }
+
+  private void ensurePasswordPolicy(String newPassword) {
+    int minLen = Integer.parseInt(env.getProperty("password.policy.min-length", "8"));
+    String regex = env.getProperty(
+        "password.policy.regex",
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"
+    );
+
+    if (newPassword.length() < minLen) {
+      throw new PasswordPolicyException("La contraseña debe tener al menos " + minLen + " caracteres");
+    }
+
+    Pattern pattern = Pattern.compile(regex);
+    if (!pattern.matcher(newPassword).matches()) {
+      throw new PasswordPolicyException("La contraseña no cumple la política de complejidad");
+    }
+  }
+}

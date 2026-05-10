@@ -158,7 +158,7 @@ public class OtpServiceImpl implements OtpService {
 
   @Override
   @Transactional
-  @Scheduled(cron = "0 0 * * * *") // Cada hora
+  @Scheduled(cron = "0 0 0 * * *")
   public void cleanupExpiredOtps() {
     log.info("Ejecutando limpieza de OTP expirados");
     otpTokenRepository.deleteExpiredTokens(LocalDateTime.now());
@@ -168,7 +168,7 @@ public class OtpServiceImpl implements OtpService {
    * Tarea programada: Limpia cuentas no verificadas después del tiempo configurado.
    * Se ejecuta cada 6 horas.
    */
-  @Scheduled(cron = "0 0 */6 * * *")
+  @Scheduled(cron = "0 0 23 * * *")
   @Transactional
   public void cleanupUnverifiedAccounts() {
     log.info("=== Iniciando limpieza de cuentas no verificadas ===");

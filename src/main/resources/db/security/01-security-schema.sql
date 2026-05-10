@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     500
 ) NOT NULL,
-    enabled BOOLEAN NOT NULL DEFAULT TRUE
+    enabled BOOLEAN NOT NULL
     );
 
 -- Tabla de autoridades directas por usuario

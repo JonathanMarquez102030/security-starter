@@ -5,6 +5,7 @@
 package com.jonathanmarquezperez.security.security.config;
 
 import com.jonathanmarquezperez.security.security.enums.AuthorizationMode;
+import com.jonathanmarquezperez.security.security.enums.RuleType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -81,11 +82,7 @@ public class SecurityProperties {
   @Setter
   public static class Csrf {
     /** Rutas excluidas de la validación CSRF. */
-    private List<String> ignoredPaths = new ArrayList<>(List.of(
-            "/auth/register", "/auth/csrf",  "/auth/refresh",
-            "/auth/public/**", "/auth/login", "/auth/logout",
-            "/auth/verify",    "/auth/resend-otp", "/auth/password/**"
-    ));
+    private List<String> ignoredPaths = new ArrayList<>();
   }
 
   @Getter
@@ -103,14 +100,66 @@ public class SecurityProperties {
   @Setter
   public static class Authorization {
     /** Rutas accesibles sin autenticación. */
-    private List<String> publicPaths = new ArrayList<>(List.of(
-            "/auth/register", "/auth/csrf",  "/auth/refresh",
-            "/auth/public/**", "/auth/verify", "/auth/resend-otp",
-            "/auth/password/**", "/error",    "/test/**"
-    ));
+    private List<String> publicPaths = new ArrayList<>();
 
-    private List<String> authenticatedPaths = new ArrayList<>(List.of(
-            "/auth/login", "/auth/me", "/me/**", "/auth/logout"
-    ));
+    /**
+     * Rutas accesibles solo para usuarios autenticados.
+     */
+    private List<String> authenticatedPaths = new ArrayList<>();
+
+    /**
+     * Reglas de autorización basadas en roles/authorities definidas por el consumidor.
+     * Se evalúan en el orden en que están declaradas, antes del catch-all anyRequest().
+     */
+    private List<AuthorizationRule> rules = new ArrayList<>();
+  }
+
+  /**
+   * Define una regla de autorización para un conjunto de rutas.
+   * <p>
+   * Ejemplo en application.yml:
+   * <pre>
+   * security:
+   *   authorization:
+   *     rules:
+   *       - paths: ["/admin/**"]
+   *         type: HAS_ROLE
+   *         roles: ["ADMIN"]
+   *       - paths: ["/reports/**"]
+   *         type: HAS_ANY_ROLE
+   *         roles: ["ADMIN", "ANALYST"]
+   *       - paths: ["/super/**"]
+   *         type: HAS_ALL_ROLES
+   *         roles: ["ADMIN", "SUPERUSER"]
+   *       - paths: ["/api/read/**"]
+   *         type: HAS_ANY_AUTHORITY
+   *         authorities: ["READ_DATA", "READ_ALL"]
+   * </pre>
+   */
+  @Getter
+  @Setter
+  public static class AuthorizationRule {
+
+    /**
+     * Rutas a las que aplica esta regla. Soporta patrones Ant (**, *, ?).
+     */
+    private List<String> paths = new ArrayList<>();
+
+    /**
+     * Tipo de verificación a aplicar.
+     */
+    private RuleType type = RuleType.AUTHENTICATED;
+
+    /**
+     * Roles requeridos. Se usan con HAS_ROLE, HAS_ANY_ROLE, HAS_ALL_ROLES.
+     * Spring Security agrega el prefijo ROLE_ automáticamente.
+     */
+    private List<String> roles = new ArrayList<>();
+
+    /**
+     * Authorities requeridas. Se usan con HAS_AUTHORITY, HAS_ANY_AUTHORITY, HAS_ALL_AUTHORITIES.
+     * Se comparan exactamente como se declaran (sin prefijo automático).
+     */
+    private List<String> authorities = new ArrayList<>();
   }
 }

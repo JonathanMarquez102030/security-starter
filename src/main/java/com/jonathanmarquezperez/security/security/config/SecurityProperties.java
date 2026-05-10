@@ -108,5 +108,9 @@ public class SecurityProperties {
             "/auth/public/**", "/auth/verify", "/auth/resend-otp",
             "/auth/password/**", "/error",    "/test/**"
     ));
+
+    private List<String> authenticatedPaths = new ArrayList<>(List.of(
+            "/auth/login", "/auth/me", "/me/**", "/auth/logout"
+    ));
   }
 }

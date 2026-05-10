@@ -89,7 +89,7 @@ public class SecurityFilterChainAutoConfiguration {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers(props.getAuthorization().getPublicPaths().toArray(String[]::new))
                 .permitAll()
-            .requestMatchers("/auth/login", "/auth/me", "/me/**", "/auth/logout")
+            .requestMatchers(props.getAuthorization().getAuthenticatedPaths().toArray(String[]::new))
                 .authenticated()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")

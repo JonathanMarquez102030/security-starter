@@ -94,7 +94,7 @@ public class CustomBasicAuthenticationEntryPoint implements AuthenticationEntryP
       if (authException.getCause() instanceof EmailNotVerifiedException) {
         return new ErrorInfo(authException.getCause().getMessage(), "email_not_verified");
       }
-      return new ErrorInfo(authException.getMessage(), "authentication_failed");
+      return new ErrorInfo("Error en el servicio de autenticación. Por favor, intente nuevamente.", "authentication_failed");
     }
 
     if (authException instanceof DisabledException) {

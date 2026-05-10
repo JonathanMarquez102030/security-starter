@@ -15,12 +15,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.mail.autoconfigure.MailSenderAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@AutoConfiguration(after = SecurityCoreAutoConfiguration.class)
+@AutoConfiguration(after = {
+        SecurityCoreAutoConfiguration.class,
+        MailSenderAutoConfiguration.class      // garantiza que JavaMailSender ya existe
+})
 @ConditionalOnWebApplication
 @ConditionalOnClass(JavaMailSender.class)   // solo si el consumidor incluyó spring-boot-starter-mail
 @EnableScheduling                            // activa @Scheduled en OtpServiceImpl (limpieza automática de OTPs)

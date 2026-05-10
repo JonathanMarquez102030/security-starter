@@ -33,8 +33,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
     SecurityJwtAutoConfiguration.class
 })
 @ConditionalOnWebApplication
-@EnableJpaRepositories(basePackages = "com.jonathanmarquezperez.security.security.repository")
-@EntityScan(basePackages = "com.jonathanmarquezperez.security.security.model")
+@EnableJpaRepositories(basePackages = {
+        "com.jonathanmarquezperez.security.security.repository",
+        "com.jonathanmarquezperez.security.email_verification.repository"
+})
+@EntityScan(basePackages = {
+        "com.jonathanmarquezperez.security.security.model",
+        "com.jonathanmarquezperez.security.email_verification.model"
+})
 @Import(SecurityCoreAutoConfiguration.JpaAuditingConfiguration.class)
 public class SecurityCoreAutoConfiguration {
 

@@ -1,0 +1,48 @@
+{
+  "groups": [
+    {
+      "name": "security.authorization.rules",
+      "type": "com.jonathanmarquezperez.security.security.config.SecurityProperties$AuthorizationRule",
+      "description": "Regla de autorización basada en roles o authorities aplicada a un conjunto de rutas."
+    }
+  ],
+  "properties": [
+    {
+      "name": "security.authorization.rules[*].paths",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Rutas a las que aplica esta regla. Soporta patrones Ant (**, *, ?)."
+    },
+    {
+      "name": "security.authorization.rules[*].type",
+      "type": "com.jonathanmarquezperez.security.security.enums.RuleType",
+      "description": "Tipo de verificación: HAS_ROLE, HAS_ANY_ROLE, HAS_ALL_ROLES, HAS_AUTHORITY, HAS_ANY_AUTHORITY, HAS_ALL_AUTHORITIES, PERMIT_ALL, AUTHENTICATED, DENY_ALL.",
+      "defaultValue": "AUTHENTICATED"
+    },
+    {
+      "name": "security.authorization.rules[*].roles",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Roles requeridos. Spring Security agrega el prefijo ROLE_ automáticamente. Usado con HAS_ROLE, HAS_ANY_ROLE, HAS_ALL_ROLES."
+    },
+    {
+      "name": "security.authorization.rules[*].authorities",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Authorities requeridas sin prefijo automático. Usado con HAS_AUTHORITY, HAS_ANY_AUTHORITY, HAS_ALL_AUTHORITIES."
+    }
+  ],
+  "hints": [
+    {
+      "name": "security.authorization.rules[*].type",
+      "values": [
+        { "value": "PERMIT_ALL",         "description": "Acceso libre sin autenticación." },
+        { "value": "AUTHENTICATED",      "description": "Requiere estar autenticado, sin importar el rol." },
+        { "value": "HAS_ROLE",           "description": "Requiere exactamente un rol. Define roles[0]." },
+        { "value": "HAS_ANY_ROLE",       "description": "Requiere al menos uno de los roles listados." },
+        { "value": "HAS_ALL_ROLES",      "description": "Requiere TODOS los roles listados." },
+        { "value": "HAS_AUTHORITY",      "description": "Requiere exactamente una authority. Define authorities[0]." },
+        { "value": "HAS_ANY_AUTHORITY",  "description": "Requiere al menos una de las authorities listadas." },
+        { "value": "HAS_ALL_AUTHORITIES","description": "Requiere TODAS las authorities listadas." },
+        { "value": "DENY_ALL",           "description": "Bloquea el acceso siempre." }
+      ]
+    }
+  ]
+}

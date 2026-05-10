@@ -11,6 +11,7 @@ import com.jonathanmarquezperez.security.security.model.UserProfile;
 import com.jonathanmarquezperez.security.security.repository.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -32,7 +33,9 @@ public class CustomUserDetailsService implements UserDetailsService {
   private final SecurityProperties securityProperties;
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
+
+    log.debug("Cargando usuario desde BD: {}", username);
 
     // 1. Cargar usuario base desde 'users'
     String userSql = "SELECT username, password, enabled FROM users WHERE username = ?";
@@ -49,6 +52,8 @@ public class CustomUserDetailsService implements UserDetailsService {
       throw new UsernameNotFoundException("Usuario no encontrado: " + username);
     }
 
+    log.debug("Usuario encontrado en BD: {} ", username);
+
     Object[] userData = userOpt.get();
     String dbUsername = (String) userData[0];
     String password = (String) userData[1];
@@ -56,6 +61,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     // 2. Cargar autoridades según el modo configurado
     List<String> authorities = loadAuthorities(dbUsername);
+
+    log.debug("Usuario encontrado en BD: {} (enabled={})", dbUsername, enabled);
+    log.debug("Authorities cargadas para {}: {}", dbUsername, authorities);
 
     // 3. Cargar perfil extendido (opcional)
     UserProfile profile = userProfileRepository.findById(dbUsername).orElse(null);
@@ -75,6 +83,7 @@ public class CustomUserDetailsService implements UserDetailsService {
   private List<String> loadAuthorities(String username) {
 
     if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
+      log.debug("Cargando authorities por GRUPOS para: {}", username);
       // Consulta para obtener autoridades desde grupos
       String groupSql = """
               SELECT ga.authority
@@ -85,6 +94,8 @@ public class CustomUserDetailsService implements UserDetailsService {
       return jdbcTemplate.queryForList(groupSql, String.class, username);
 
     } else {
+      log.debug("Cargando authorities DIRECTAS para: {}", username);
+
       // Consulta para obtener autoridades directas
       String authSql = "SELECT authority FROM authorities WHERE username = ?";
       return jdbcTemplate.queryForList(authSql, String.class, username);

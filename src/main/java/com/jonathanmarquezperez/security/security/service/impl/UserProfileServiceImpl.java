@@ -63,8 +63,11 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles) {
+    log.debug("Iniciando creación de usuario: {}", registerRequestDto.email());
+    log.debug("  → Roles a asignar: {}", roles);
 
     if (userExists(registerRequestDto.email())) {
+      log.warn("Intento de registro con email ya existente: {}", registerRequestDto.email());
       throw new EmailAddressAlreadyExistsException(
           String.format("El email '%s' ya está registrado", registerRequestDto.email())
       );
@@ -120,11 +123,13 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public void updatePassword(String email, String newRawPassword) {
+    log.debug("Actualizando contraseña para: {}", email);
     String encodedPassword = passwordEncoder.encode(newRawPassword);
     jdbcTemplate.update(
         "UPDATE users SET password = ? WHERE username = ?",
         encodedPassword, email
     );
+    log.info("Contraseña actualizada exitosamente para: {}", email);
   }
 
   //TODO: Implementar cuando este mas estandarizado y con buenas practicas de seguridad para confirmar.
@@ -135,11 +140,15 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   @Transactional
   public void deleteUser(String email) {
+    log.info("Eliminando usuario: {}", email);
+
     // 1. Eliminar authorities
     jdbcTemplate.update("DELETE FROM authorities WHERE username = ?", email);
 
     // 2. Eliminar usuario (cascada elimina perfil por FK ON DELETE CASCADE)
     jdbcTemplate.update("DELETE FROM users WHERE username = ?", email);
+
+    log.info("Usuario eliminado exitosamente: {}", email);
   }
 
   /**
@@ -173,6 +182,8 @@ public class UserProfileServiceImpl implements UserProfileService {
    * Asigna authorities al usuario según el modo configurado.
    */
   private void assignAuthorities(String email, List<Role> roles) {
+    log.debug("Asignando authorities a {} en modo {}", email, securityProperties.getAuthorizationMode());
+
     if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
       assignAuthoritiesViaGroups(email, roles);
     } else {
@@ -204,9 +215,13 @@ public class UserProfileServiceImpl implements UserProfileService {
     Integer groupId = results.isEmpty() ? null : results.getFirst();
 
     if (groupId == null) {
+      log.debug("Grupo '{}' no existe, creando nuevo", groupName);
+
       createGroup(groupName);
       groupId = getGroupId(groupName);
       createGroupAuthority(groupId, role);
+    }else {
+      log.debug("Grupo '{}' encontrado con id: {}", groupName, groupId);
     }
 
     return groupId;
@@ -296,6 +311,8 @@ public class UserProfileServiceImpl implements UserProfileService {
    */
   @Transactional
   public void setEmailVerified(String email, boolean verified) {
+    log.info("Estableciendo emailVerified={} para: {}", verified, email);
+
     setEnabled(email, verified);
 
     Optional<UserProfile> userProfile = userProfileRepository.findByEmail(email);

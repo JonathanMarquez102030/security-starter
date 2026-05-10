@@ -13,6 +13,7 @@ import com.jonathanmarquezperez.security.security.filter.JWTTokenValidatorFilter
 import com.jonathanmarquezperez.security.security.utils.CookieUtil;
 import com.jonathanmarquezperez.security.security.utils.JwtUtil;
 import com.jonathanmarquezperez.security.utils.ProfileDetector;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -36,6 +37,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 @AutoConfiguration(after = SecurityCoreAutoConfiguration.class)
 @ConditionalOnWebApplication
 @EnableWebSecurity
@@ -111,6 +113,21 @@ public class SecurityFilterChainAutoConfiguration {
         // 5. Reglas de autorización
         String[] publicPaths = mergePaths(LIBRARY_PUBLIC_PATHS, props.getAuthorization().getPublicPaths());
         String[] authenticatedPaths = mergePaths(LIBRARY_AUTHENTICATED_PATHS, props.getAuthorization().getAuthenticatedPaths());
+
+        //  Logs de arranque __________________________________________________________________________
+        log.debug("SecurityFilterChain configurado");
+        log.debug("  → Rutas públicas    : {}", java.util.Arrays.asList(publicPaths));
+        log.debug("  → Rutas autenticadas: {}", java.util.Arrays.asList(authenticatedPaths));
+
+        if (props.getAuthorization().getRules().isEmpty()) {
+            log.debug("  → Reglas de roles   : ninguna configurada");
+        } else {
+            props.getAuthorization().getRules().forEach(rule ->
+                    log.debug("  → Regla [{} → {}] paths: {}", rule.getType(),
+                            rule.getRoles().isEmpty() ? rule.getAuthorities() : rule.getRoles(),
+                            rule.getPaths())
+            );
+        }
 
         http.authorizeHttpRequests(auth -> {
             auth.requestMatchers(publicPaths).permitAll();

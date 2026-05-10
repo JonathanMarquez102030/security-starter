@@ -32,7 +32,10 @@ public class PasswordServiceImpl implements PasswordService {
 
   @Override
   public void requestForgotPasswordOtp(String email) {
+    log.info("Solicitud de OTP para recuperación de contraseña: {}", email);
+
     if (!userProfileService.userExists(email)) {
+      log.debug("forgot-password: email no existe, respuesta silenciosa");
       return;
     }
 
@@ -48,13 +51,18 @@ public class PasswordServiceImpl implements PasswordService {
 
   @Override
   public String verifyForgotPasswordOtpAndIssueResetToken(String email, String otpCode) {
+    log.info("Verificando OTP de recuperación de contraseña para: {}", email);
     otpService.verifyOtp(email, otpCode, OtpPurpose.PASSWORD_RESET);
-    return jwtUtil.generatePasswordResetToken(email);
+    String resetToken = jwtUtil.generatePasswordResetToken(email);
+    log.debug("Reset token generado para: {}", email);
+    return resetToken;
   }
 
   @Override
   @Transactional
   public void resetPassword(String resetToken, String newPassword, String confirmPassword) {
+    log.debug("Procesando reset de contraseña");
+
     ensurePasswordsMatch(newPassword, confirmPassword);
     ensurePasswordPolicy(newPassword);
 
@@ -78,10 +86,12 @@ public class PasswordServiceImpl implements PasswordService {
 
     userProfileService.updatePassword(email, newPassword);
     otpService.deleteAllOtpsByEmail(email);
+    log.info("Contraseña reseteada exitosamente para: {}", email);
   }
 
   @Override
   public void requestChangePasswordOtp(String authenticatedEmail) {
+    log.info("Solicitud de OTP para cambio de contraseña: {}", authenticatedEmail);
     otpService.resendOtp(authenticatedEmail, OtpPurpose.PASSWORD_CHANGE);
   }
 
@@ -89,6 +99,8 @@ public class PasswordServiceImpl implements PasswordService {
   public void confirmChangePassword(String authenticatedEmail,
                                     ChangePasswordConfirmRequestDto passwordChangeDto
   ) {
+    log.info("Confirmando cambio de contraseña para: {}", authenticatedEmail);
+
     String newPassword = passwordChangeDto.newPassword();
     String confirmPassword = passwordChangeDto.confirmPassword();
     String currentPassword = passwordChangeDto.currentPassword();
@@ -114,6 +126,8 @@ public class PasswordServiceImpl implements PasswordService {
 
     userProfileService.updatePassword(authenticatedEmail, newPassword);
     otpService.deleteAllOtpsByEmail(authenticatedEmail);
+
+    log.info("Contraseña cambiada exitosamente para: {}", authenticatedEmail);
   }
 
   private void ensurePasswordsMatch(String newPassword, String confirmPassword) {

@@ -51,12 +51,30 @@ public class SecurityProperties {
   @Getter
   @Setter
   public static class Cors {
-    private List<String> allowedOrigins  = new ArrayList<>();
-    private List<String> allowedMethods  = List.of("*");
-    private List<String> allowedHeaders  = List.of("*");
-    private List<String> exposedHeaders  = List.of("Authorization", "X-XSRF-TOKEN");
-    private boolean      allowCredentials = true;
-    private long         maxAge           = 3600L;
+    /**
+     * Orígenes permitidos para peticiones CORS.
+     */
+    private List<String> allowedOrigins = new ArrayList<>();
+    /**
+     * Métodos HTTP permitidos en peticiones CORS.
+     */
+    private List<String> allowedMethods = List.of("*");
+    /**
+     * Encabezados permitidos en peticiones CORS.
+     */
+    private List<String> allowedHeaders = List.of("*");
+    /**
+     * Encabezados expuestos al cliente en respuestas CORS.
+     */
+    private List<String> exposedHeaders = List.of("Authorization", "X-XSRF-TOKEN");
+    /**
+     * Indica si se permiten credenciales (cookies, autorización) en peticiones CORS.
+     */
+    private boolean allowCredentials = true;
+    /**
+     * Tiempo máximo (en segundos) que el navegador cachea la respuesta preflight CORS.
+     */
+    private long maxAge = 3600L;
   }
 
   @Getter
@@ -75,6 +93,9 @@ public class SecurityProperties {
   public static class Cookie {
     /** true = cookies solo viajan por HTTPS. Activa en producción. */
     private boolean secure   = false;
+    /**
+     * Política SameSite para cookies (Strict, Lax, None). Protege contra ataques CSRF.
+     */
     private String  sameSite = "Lax";
   }
 

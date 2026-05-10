@@ -17,11 +17,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class OtpProperties {
 
   /**
-   * Longitud del código OTP.
-   */
-  private Integer length = 6;
-
-  /**
    * Minutos de validez del OTP.
    */
   private Integer expirationMinutes = 10;

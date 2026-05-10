@@ -5,6 +5,7 @@
 package com.jonathanmarquezperez.security.autoconfigure;
 
 import com.jonathanmarquezperez.security.email_verification.config.OtpProperties;
+import com.jonathanmarquezperez.security.security.config.PasswordPolicyProperties;
 import com.jonathanmarquezperez.security.security.config.SecurityProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
@@ -17,8 +18,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @AutoConfigurationPackage(basePackages = "com.jonathanmarquez.security")
 @EnableConfigurationProperties({
         SecurityProperties.class,
-        OtpProperties.class
+        OtpProperties.class,
+        PasswordPolicyProperties.class
 })
 public class SecurityJwtAutoConfiguration {
-    // Por ahora vacía — los @Bean vienen en el Paso 4
 }

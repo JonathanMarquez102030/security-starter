@@ -6,6 +6,7 @@ package com.jonathanmarquezperez.security.security.service.impl;
 
 import com.jonathanmarquezperez.security.email_verification.service.OtpService;
 import com.jonathanmarquezperez.security.exceptions.customexceptions.EmailAddressAlreadyExistsException;
+import com.jonathanmarquezperez.security.security.config.PasswordPolicyValidator;
 import com.jonathanmarquezperez.security.security.config.SecurityProperties;
 import com.jonathanmarquezperez.security.security.enums.AuthorizationMode;
 import com.jonathanmarquezperez.security.security.enums.Role;
@@ -45,6 +46,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   private final SecurityProperties securityProperties;
   private final UserProfileMapper userProfileMapper;
   private final OtpService otpService;
+  private final PasswordPolicyValidator passwordPolicyValidator;
 
   /**
    * Crea un usuario completo: credenciales + perfil extendido.
@@ -66,6 +68,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     log.debug("Iniciando creación de usuario: {}", registerRequestDto.email());
     log.debug("  → Roles a asignar: {}", roles);
 
+    passwordPolicyValidator.validate(registerRequestDto.password());
     if (userExists(registerRequestDto.email())) {
       log.warn("Intento de registro con email ya existente: {}", registerRequestDto.email());
       throw new EmailAddressAlreadyExistsException(

@@ -7,6 +7,7 @@ package com.jonathanmarquezperez.security.security.service.impl;
 import com.jonathanmarquezperez.security.email_verification.exception.ResendCooldownException;
 import com.jonathanmarquezperez.security.email_verification.service.OtpService;
 import com.jonathanmarquezperez.security.exceptions.customexceptions.*;
+import com.jonathanmarquezperez.security.security.config.PasswordPolicyValidator;
 import com.jonathanmarquezperez.security.security.enums.OtpPurpose;
 import com.jonathanmarquezperez.security.security.model.dto.ChangePasswordConfirmRequestDto;
 import com.jonathanmarquezperez.security.security.service.PasswordService;
@@ -14,11 +15,8 @@ import com.jonathanmarquezperez.security.security.service.UserProfileService;
 import com.jonathanmarquezperez.security.security.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.regex.Pattern;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,7 +26,7 @@ public class PasswordServiceImpl implements PasswordService {
   private final OtpService otpService;
   private final JwtUtil jwtUtil;
   private final PasswordEncoder passwordEncoder;
-  private final Environment env;
+  private final PasswordPolicyValidator passwordPolicyValidator;
 
   @Override
   public void requestForgotPasswordOtp(String email) {
@@ -64,7 +62,7 @@ public class PasswordServiceImpl implements PasswordService {
     log.debug("Procesando reset de contraseña");
 
     ensurePasswordsMatch(newPassword, confirmPassword);
-    ensurePasswordPolicy(newPassword);
+    passwordPolicyValidator.validate(newPassword);
 
     if (resetToken == null || resetToken.isBlank() || !jwtUtil.isPasswordResetTokenValid(resetToken)) {
       throw new InvalidPasswordResetTokenException();
@@ -107,7 +105,7 @@ public class PasswordServiceImpl implements PasswordService {
     String otpCode = passwordChangeDto.otpCode();
 
     ensurePasswordsMatch(newPassword, confirmPassword);
-    ensurePasswordPolicy(newPassword);
+    passwordPolicyValidator.validate(newPassword);
 
     String currentHash = userProfileService.getPasswordHash(authenticatedEmail);
     if (currentHash == null || currentHash.isBlank()) {
@@ -133,23 +131,6 @@ public class PasswordServiceImpl implements PasswordService {
   private void ensurePasswordsMatch(String newPassword, String confirmPassword) {
     if (newPassword == null || !newPassword.equals(confirmPassword)) {
       throw new PasswordMismatchException();
-    }
-  }
-
-  private void ensurePasswordPolicy(String newPassword) {
-    int minLen = Integer.parseInt(env.getProperty("password.policy.min-length", "8"));
-    String regex = env.getProperty(
-        "password.policy.regex",
-        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$"
-    );
-
-    if (newPassword.length() < minLen) {
-      throw new PasswordPolicyException("La contraseña debe tener al menos " + minLen + " caracteres");
-    }
-
-    Pattern pattern = Pattern.compile(regex);
-    if (!pattern.matcher(newPassword).matches()) {
-      throw new PasswordPolicyException("La contraseña no cumple la política de complejidad");
     }
   }
 }

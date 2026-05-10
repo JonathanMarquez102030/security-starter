@@ -9,6 +9,8 @@ import com.jonathanmarquezperez.security.email_verification.service.EmailService
 import com.jonathanmarquezperez.security.email_verification.service.OtpService;
 import com.jonathanmarquezperez.security.email_verification.service.impl.NoOpOtpService;
 import com.jonathanmarquezperez.security.exceptions.response.ApiResponseFactory;
+import com.jonathanmarquezperez.security.security.config.PasswordPolicyProperties;
+import com.jonathanmarquezperez.security.security.config.PasswordPolicyValidator;
 import com.jonathanmarquezperez.security.security.config.SecurityProperties;
 import com.jonathanmarquezperez.security.security.controller.AuthController;
 import com.jonathanmarquezperez.security.security.controller.MePasswordController;
@@ -28,7 +30,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,10 +73,12 @@ public class SecurityControllersAutoConfiguration {
             UserDetailsService userDetailsService,
             SecurityProperties securityProperties,
             UserProfileMapper userProfileMapper,
-            OtpService otpService) {
+            OtpService otpService,
+            PasswordPolicyValidator passwordPolicyValidator) {
         return new UserProfileServiceImpl(
                 jdbcTemplate, userProfileRepository, passwordEncoder,
-                userDetailsService, securityProperties, userProfileMapper, otpService);
+                userDetailsService, securityProperties, userProfileMapper, otpService,
+                passwordPolicyValidator);
     }
 
     @Bean
@@ -85,9 +88,15 @@ public class SecurityControllersAutoConfiguration {
             OtpService otpService,
             JwtUtil jwtUtil,
             PasswordEncoder passwordEncoder,
-            Environment env) {
+            PasswordPolicyValidator passwordPolicyValidator) {
         return new PasswordServiceImpl(
-                userProfileService, otpService, jwtUtil, passwordEncoder, env);
+                userProfileService, otpService, jwtUtil, passwordEncoder, passwordPolicyValidator);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PasswordPolicyValidator passwordPolicyValidator(PasswordPolicyProperties passwordPolicyProperties) {
+        return new PasswordPolicyValidator(passwordPolicyProperties);
     }
 
     // ── Controladores de seguridad ────────────────────────────────────────────────

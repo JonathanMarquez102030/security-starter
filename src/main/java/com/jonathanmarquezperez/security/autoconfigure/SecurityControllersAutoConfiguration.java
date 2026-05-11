@@ -9,12 +9,14 @@ import com.jonathanmarquezperez.security.email_verification.service.EmailService
 import com.jonathanmarquezperez.security.email_verification.service.OtpService;
 import com.jonathanmarquezperez.security.email_verification.service.impl.NoOpOtpService;
 import com.jonathanmarquezperez.security.exceptions.response.ApiResponseFactory;
+import com.jonathanmarquezperez.security.security.config.DefaultRoleProvider;
 import com.jonathanmarquezperez.security.security.config.PasswordPolicyProperties;
 import com.jonathanmarquezperez.security.security.config.PasswordPolicyValidator;
 import com.jonathanmarquezperez.security.security.config.SecurityProperties;
 import com.jonathanmarquezperez.security.security.controller.AuthController;
 import com.jonathanmarquezperez.security.security.controller.MePasswordController;
 import com.jonathanmarquezperez.security.security.controller.PasswordController;
+import com.jonathanmarquezperez.security.security.enums.Role;
 import com.jonathanmarquezperez.security.security.model.mapper.UserProfileMapper;
 import com.jonathanmarquezperez.security.security.repository.UserProfileRepository;
 import com.jonathanmarquezperez.security.security.service.PasswordService;
@@ -33,6 +35,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @AutoConfiguration(after = {SecurityCoreAutoConfiguration.class, OtpAutoConfiguration.class})
 @ConditionalOnWebApplication
@@ -95,6 +99,12 @@ public class SecurityControllersAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public DefaultRoleProvider defaultRoleProvider() {
+        return () -> List.of(Role.ROLE_USER);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public PasswordPolicyValidator passwordPolicyValidator(PasswordPolicyProperties passwordPolicyProperties) {
         return new PasswordPolicyValidator(passwordPolicyProperties);
     }
@@ -109,10 +119,11 @@ public class SecurityControllersAutoConfiguration {
             CookieUtil cookieUtil,
             UserProfileMapper userProfileMapper,
             OtpService otpService,
-            ApiResponseFactory apiResponseFactory) {
+            ApiResponseFactory apiResponseFactory,
+            DefaultRoleProvider defaultRoleProvider) {
         return new AuthController(
                 userProfileService, jwtUtil, cookieUtil,
-                userProfileMapper, otpService, apiResponseFactory);
+                userProfileMapper, otpService, apiResponseFactory, defaultRoleProvider);
     }
 
     @Bean

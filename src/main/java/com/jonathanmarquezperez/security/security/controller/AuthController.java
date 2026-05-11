@@ -10,8 +10,8 @@ import com.jonathanmarquezperez.security.exceptions.customexceptions.InvalidRefr
 import com.jonathanmarquezperez.security.exceptions.customexceptions.UserNotAuthenticatedException;
 import com.jonathanmarquezperez.security.exceptions.response.ApiResponseFactory;
 import com.jonathanmarquezperez.security.exceptions.response.SuccessApiResponse;
+import com.jonathanmarquezperez.security.security.config.DefaultRoleProvider;
 import com.jonathanmarquezperez.security.security.enums.OtpPurpose;
-import com.jonathanmarquezperez.security.security.enums.Role;
 import com.jonathanmarquezperez.security.security.model.SecurityUserDetails;
 import com.jonathanmarquezperez.security.security.model.UserProfile;
 import com.jonathanmarquezperez.security.security.model.dto.AuthResponseDto;
@@ -34,8 +34,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Controlador REST para la gestión de autenticación y autorización de usuarios.
@@ -69,6 +67,7 @@ public class AuthController {
   private final UserProfileMapper userProfileMapper;
   private final OtpService otpService;
   private final ApiResponseFactory apiResponseFactory;
+  private final DefaultRoleProvider defaultRoleProvider;
 
   /**
    * Autentica a un usuario mediante credenciales Basic Auth.
@@ -124,7 +123,7 @@ public class AuthController {
       );
     }
 
-    UserProfile userProfile = userProfileService.createUser(registerRequest, List.of(Role.ROLE_USER));
+    UserProfile userProfile = userProfileService.createUser(registerRequest, defaultRoleProvider.getDefaultRegistrationRoles());
 
     // 2. Enviar OTP en operación separada
     try {

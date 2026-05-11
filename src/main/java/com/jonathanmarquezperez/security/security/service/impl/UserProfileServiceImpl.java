@@ -9,7 +9,7 @@ import com.jonathanmarquezperez.security.exceptions.customexceptions.EmailAddres
 import com.jonathanmarquezperez.security.security.config.PasswordPolicyValidator;
 import com.jonathanmarquezperez.security.security.config.SecurityProperties;
 import com.jonathanmarquezperez.security.security.enums.AuthorizationMode;
-import com.jonathanmarquezperez.security.security.enums.Role;
+import com.jonathanmarquezperez.security.security.enums.RoleDefinition;
 import com.jonathanmarquezperez.security.security.model.UserProfile;
 import com.jonathanmarquezperez.security.security.model.dto.RegisterRequestDto;
 import com.jonathanmarquezperez.security.security.model.dto.UserProfileDto;
@@ -64,7 +64,7 @@ public class UserProfileServiceImpl implements UserProfileService {
    */
   @Override
   @Transactional
-  public UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles) {
+  public UserProfile createUser(RegisterRequestDto registerRequestDto, List<? extends RoleDefinition> roles) {
     log.debug("Iniciando creación de usuario: {}", registerRequestDto.email());
     log.debug("  → Roles a asignar: {}", roles);
 
@@ -184,7 +184,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Asigna authorities al usuario según el modo configurado.
    */
-  private void assignAuthorities(String email, List<Role> roles) {
+  private void assignAuthorities(String email, List<?extends RoleDefinition> roles) {
     log.debug("Asignando authorities a {} en modo {}", email, securityProperties.getAuthorizationMode());
 
     if (securityProperties.getAuthorizationMode() == AuthorizationMode.GROUPS) {
@@ -197,8 +197,8 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Asigna authorities mediante grupos.
    */
-  private void assignAuthoritiesViaGroups(String email, List<Role> roles) {
-    for (Role role : roles) {
+  private void assignAuthoritiesViaGroups(String email, List<? extends RoleDefinition> roles) {
+    for (RoleDefinition role : roles) {
       String groupName = role.getGroupName();
       Integer groupId = getOrCreateGroup(groupName, role);
       assignUserToGroup(email, groupId);
@@ -208,7 +208,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Obtiene o crea un grupo si no existe.
    */
-  private Integer getOrCreateGroup(String groupName, Role role) {
+  private Integer getOrCreateGroup(String groupName, RoleDefinition role) {
     List<Integer> results = jdbcTemplate.query(
         "SELECT id FROM groups WHERE group_name = ?",
         (rs, rowNum) -> rs.getInt("id"),
@@ -254,7 +254,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Crea la autoridad asociada a un grupo.
    */
-  private void createGroupAuthority(Integer groupId, Role role) {
+  private void createGroupAuthority(Integer groupId, RoleDefinition role) {
     jdbcTemplate.update(
         "INSERT INTO group_authorities (group_id, authority) VALUES (?, ?)",
         groupId, role.name()
@@ -274,8 +274,8 @@ public class UserProfileServiceImpl implements UserProfileService {
   /**
    * Asigna authorities directamente sin usar grupos.
    */
-  private void assignAuthoritiesDirectly(String email, List<Role> roles) {
-    for (Role role : roles) {
+  private void assignAuthoritiesDirectly(String email, List<? extends RoleDefinition> roles) {
+    for (RoleDefinition role : roles) {
       jdbcTemplate.update(
           "INSERT INTO authorities (username, authority) VALUES (?, ?)",
           email, role.name()

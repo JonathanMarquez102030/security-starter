@@ -4,7 +4,7 @@
  */
 package com.jonathanmarquezperez.security.security.service;
 
-import com.jonathanmarquezperez.security.security.enums.Role;
+import com.jonathanmarquezperez.security.security.enums.RoleDefinition;
 import com.jonathanmarquezperez.security.security.model.UserProfile;
 import com.jonathanmarquezperez.security.security.model.dto.RegisterRequestDto;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,7 +27,7 @@ public interface UserProfileService {
    * @param roles              lista de roles a asignar al nuevo usuario
    * @return perfil del usuario recién creado
    */
-  UserProfile createUser(RegisterRequestDto registerRequestDto, List<Role> roles);
+  UserProfile createUser(RegisterRequestDto registerRequestDto, List<? extends RoleDefinition> roles);
 
   /**
    * Obtiene los detalles del usuario para autenticación de Spring Security.

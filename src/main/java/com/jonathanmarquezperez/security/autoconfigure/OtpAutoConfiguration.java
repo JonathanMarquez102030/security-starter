@@ -4,6 +4,9 @@
  */
 package com.jonathanmarquezperez.security.autoconfigure;
 
+import com.jonathanmarquezperez.security.email_verification.config.DefaultEmailTemplateProvider;
+import com.jonathanmarquezperez.security.email_verification.config.EmailBrandingProperties;
+import com.jonathanmarquezperez.security.email_verification.config.EmailTemplateProvider;
 import com.jonathanmarquezperez.security.email_verification.config.OtpProperties;
 import com.jonathanmarquezperez.security.email_verification.repository.OtpTokenRepository;
 import com.jonathanmarquezperez.security.email_verification.service.EmailService;
@@ -15,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.mail.autoconfigure.MailSenderAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,19 +27,20 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @AutoConfiguration(after = {
         SecurityCoreAutoConfiguration.class,
-        MailSenderAutoConfiguration.class      // garantiza que JavaMailSender ya existe
+        MailSenderAutoConfiguration.class
 })
 @ConditionalOnWebApplication
-@ConditionalOnClass(JavaMailSender.class)   // solo si el consumidor incluyó spring-boot-starter-mail
-@EnableScheduling                            // activa @Scheduled en OtpServiceImpl (limpieza automática de OTPs)
-@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // los repos JPA se resuelven en runtime vía @AutoConfigurationPackage
+@EnableConfigurationProperties(EmailBrandingProperties.class)
+@ConditionalOnClass(JavaMailSender.class)
+@EnableScheduling
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 public class OtpAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(JavaMailSender.class)
-    public EmailService emailService(JavaMailSender mailSender) {
-        return new EmailServiceImpl(mailSender);
+    public EmailService emailService(JavaMailSender mailSender, EmailTemplateProvider emailTemplateProvider) {
+        return new EmailServiceImpl(mailSender, emailTemplateProvider);
     }
 
     @Bean
@@ -51,5 +56,11 @@ public class OtpAutoConfiguration {
                 emailService,
                 otpProperties,
                 jdbcTemplate);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public EmailTemplateProvider emailTemplateProvider(EmailBrandingProperties emailBrandingProperties) {
+        return new DefaultEmailTemplateProvider(emailBrandingProperties);
     }
 }

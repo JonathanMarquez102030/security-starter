@@ -2,7 +2,7 @@
   "groups": [
     {
       "name": "jmp.security.authorization.rules",
-      "type": "com.jonathanmarquezperez.security.security.config.SecurityProperties$AuthorizationRule",
+      "type": "com.jonathanmarquezperez.security.config.SecurityProperties$AuthorizationRule",
       "description": "Regla de autorización basada en roles o authorities aplicada a un conjunto de rutas."
     }
   ],
@@ -14,7 +14,7 @@
     },
     {
       "name": "jmp.security.authorization.rules[*].type",
-      "type": "com.jonathanmarquezperez.security.security.enums.RuleType",
+      "type": "com.jonathanmarquezperez.security.enums.RuleType",
       "description": "Tipo de verificación: HAS_ROLE, HAS_ANY_ROLE, HAS_ALL_ROLES, HAS_AUTHORITY, HAS_ANY_AUTHORITY, HAS_ALL_AUTHORITIES, PERMIT_ALL, AUTHENTICATED, DENY_ALL.",
       "defaultValue": "AUTHENTICATED"
     },

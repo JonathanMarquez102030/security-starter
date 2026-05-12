@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: demo-security-starter
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  sql:
+    init:
+      # with persistent databases sql.init.mode: always
+      #      mode: always
+      schema-locations:
+        - classpath:db/security/01-security-schema.sql
+
+  h2:
+    console:
+      enabled: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:jmp19731@gmail.com}
+    password: ${MAIL_PASSWORD:kzhb veym sgjf hkzf}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+
+
+jmp:
+  security:
+    jwt:
+      secret-key: "dev-local-clave-minimo-32-caracteres-aqui"
+      issuer: "mi-app"
+    cors:
+      allowed-origins:
+        - "http://localhost:4200"
+    authorization:
+      public-paths:
+        - "/api/publico"
+

@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "security")
+@ConfigurationProperties(prefix = "jmp.security")
 public class SecurityProperties {
 
   /**

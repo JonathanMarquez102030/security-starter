@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "password.policy")
+@ConfigurationProperties(prefix = "jmp.password.policy")
 public class PasswordPolicyProperties {
 
     /**

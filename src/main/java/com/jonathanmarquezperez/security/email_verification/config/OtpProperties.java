@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "otp")
+@ConfigurationProperties(prefix = "jmp.otp")
 public class OtpProperties {
 
   /**

@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "email.branding")
+@ConfigurationProperties(prefix = "jmp.email.branding")
 public class EmailBrandingProperties {
 
     /**

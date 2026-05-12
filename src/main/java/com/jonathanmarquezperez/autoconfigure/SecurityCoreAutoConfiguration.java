@@ -58,8 +58,8 @@ public class SecurityCoreAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CookieUtil cookieUtil(Environment env) {
-        return new CookieUtil(env);
+    public CookieUtil cookieUtil(Environment env, SecurityProperties securityProperties) {
+        return new CookieUtil(env, securityProperties);
     }
 
     @Bean

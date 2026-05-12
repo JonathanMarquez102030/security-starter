@@ -174,13 +174,15 @@ public class SecurityProperties {
     /**
      * Tiempo de expiración (en milisegundos) para tokens de acceso JWT.
      * Por defecto: 900000ms (15 minutos).
+     * Valor máximo: 2147483647 (Integer.MAX_VALUE).
      */
-    private Long accessExpirationTime = 900000L;
+    private Integer accessExpirationTime = 900000;
     /**
      * Tiempo de expiración (en milisegundos) para tokens de refresco JWT.
      * Por defecto: 604800000ms (7 días).
+     * Valor máximo: 2147483647 (Integer.MAX_VALUE).
      */
-    private Long refreshExpirationTime = 604800000L;
+    private Integer refreshExpirationTime = 604800000;
     /**
      * Emisor (issuer) del token JWT. Identifica quién genera el token.
      * Por defecto: "jmp".
@@ -195,8 +197,9 @@ public class SecurityProperties {
     /**
      * Tiempo de expiración (en milisegundos) para tokens de restablecimiento de contraseña.
      * Por defecto: 3600000ms (1 hora).
+     * Valor máximo: 2147483647 (Integer.MAX_VALUE).
      */
-    private Long passwordResetExpirationTime = 3600000L;
+    private Integer passwordResetExpirationTime = 3600000;
 
 
   }

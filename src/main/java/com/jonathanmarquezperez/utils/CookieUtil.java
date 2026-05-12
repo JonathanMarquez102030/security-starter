@@ -4,6 +4,7 @@
  */
 package com.jonathanmarquezperez.utils;
 
+import com.jonathanmarquezperez.security.config.SecurityProperties;
 import com.jonathanmarquezperez.security.enums.SpringProfile;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,12 +22,13 @@ public class CookieUtil {
   private static final String PWD_RESET_TOKEN_COOKIE = "pwdResetToken";
 
   private final Environment env;
+  private final SecurityProperties securityProperties;
 
   /**
    * Crea una cookie segura para el Access Token.
    */
   public void createAccessTokenCookie(HttpServletResponse response, String token) {
-    int maxAge = Integer.parseInt(env.getProperty("jwt.access.expiration", "900000")) / 1000; // convertir a segundos
+    int maxAge = securityProperties.getJwt().getAccessExpirationTime() / 1000; // convertir a segundos
     log.debug("Creando accessToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, ACCESS_TOKEN_COOKIE, token, maxAge);
   }
@@ -35,8 +37,7 @@ public class CookieUtil {
    * Crea una cookie segura para el Refresh Token.
    */
   public void createRefreshTokenCookie(HttpServletResponse response, String token) {
-    int maxAge = Integer.parseInt(
-        env.getProperty("jwt.refresh.expiration", "604800000")) / 1000; // convertir a segundos
+    int maxAge = securityProperties.getJwt().getRefreshExpirationTime() / 1000; // convertir a segundos
     log.debug("Creando refreshToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, REFRESH_TOKEN_COOKIE, token, maxAge);
   }
@@ -96,8 +97,7 @@ public class CookieUtil {
    * Crea una cookie segura para el Password Reset Token (TTL corto).
    */
   public void createPasswordResetTokenCookie(HttpServletResponse response, String token) {
-    int maxAge = Integer.parseInt(
-        env.getProperty("jwt.pwd_reset.expiration", "600000")) / 1000; // ms -> seg
+    int maxAge = securityProperties.getJwt().getPasswordResetExpirationTime() / 1000; // ms -> seg
     log.debug("Creando pwdResetToken cookie con maxAge: {} segundos", maxAge);
     createSecureCookie(response, PWD_RESET_TOKEN_COOKIE, token, maxAge);
   }

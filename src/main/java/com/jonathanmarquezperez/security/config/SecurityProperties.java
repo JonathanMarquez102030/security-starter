@@ -2,10 +2,10 @@
  * Copyright (c) 2026 Jonathan Márquez Pérez.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
-package com.jonathanmarquezperez.security.security.config;
+package com.jonathanmarquezperez.security.config;
 
-import com.jonathanmarquezperez.security.security.enums.AuthorizationMode;
-import com.jonathanmarquezperez.security.security.enums.RuleType;
+import com.jonathanmarquezperez.security.enums.AuthorizationMode;
+import com.jonathanmarquezperez.security.enums.RuleType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -46,6 +46,11 @@ public class SecurityProperties {
 
   // ── Authorization ─────────────────────────────────────────────────────────────
   private final Authorization authorization = new Authorization();
+
+  // ── JWT ─────────────────────────────────────────────────────────────
+
+  private final JwtDefinition jwt = new JwtDefinition();
+
 
   // ═════════════════════════════════════════════════════════════════════════════
 
@@ -161,5 +166,38 @@ public class SecurityProperties {
      * Se comparan exactamente como se declaran (sin prefijo automático).
      */
     private List<String> authorities = new ArrayList<>();
+  }
+
+  @Getter
+  @Setter
+  public static class JwtDefinition {
+    /**
+     * Tiempo de expiración (en milisegundos) para tokens de acceso JWT.
+     * Por defecto: 900000ms (15 minutos).
+     */
+    private Long accessExpirationTime = 900000L;
+    /**
+     * Tiempo de expiración (en milisegundos) para tokens de refresco JWT.
+     * Por defecto: 604800000ms (7 días).
+     */
+    private Long refreshExpirationTime = 604800000L;
+    /**
+     * Emisor (issuer) del token JWT. Identifica quién genera el token.
+     * Por defecto: "jmp".
+     */
+    private String issuer = "jmp";
+    /**
+     * Clave secreta utilizada para firmar los tokens JWT.
+     * Debe tener al menos 256 bits de longitud para HS256.
+     * Por defecto: "default_secret_key_minimum_length_256bits".
+     */
+    private String secretKey = "default_secret_key_minimum_length_256bits";
+    /**
+     * Tiempo de expiración (en milisegundos) para tokens de restablecimiento de contraseña.
+     * Por defecto: 3600000ms (1 hora).
+     */
+    private Long passwordResetExpirationTime = 3600000L;
+
+
   }
 }

@@ -2,14 +2,12 @@
  * Copyright (c) 2026 Jonathan Márquez Pérez.
  * Licensed under the MIT License. See LICENSE file in the project root for full license information.
  */
-package com.jonathanmarquezperez.security.security.utils;
+package com.jonathanmarquezperez.utils;
 
+import com.jonathanmarquezperez.security.config.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -20,14 +18,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class JwtUtil {
-
-
-  private final Environment env;
-
-  @Value("${spring.application.name:security-jwt-spring-boot-starter-library}")
-  private String appName;
 
   //JWT CLAIMS
   private static final String USERNAME = "username";
@@ -35,16 +26,23 @@ public class JwtUtil {
   private static final String TYPE = "type";
   private static final String JTI = "jti";
 
+  private final String JWT_ISSUER;
+
+  private final SecurityProperties securityProperties;
+
+  public JwtUtil(SecurityProperties securityProperties) {
+    this.securityProperties = securityProperties;
+    JWT_ISSUER = securityProperties.getJwt().getIssuer();
+  }
+
   /**
    * Genera un Access Token JWT (corta duración).
    */
   public String generateAccessToken(Authentication authentication) {
-    long expirationTime = Long.parseLong(
-        env.getProperty("jwt.access.expiration", "900000") // 15 minutos por defecto
-    );
+    long expirationTime = securityProperties.getJwt().getAccessExpirationTime();
 
     return Jwts.builder()
-               .issuer(env.getProperty("jwt.issuer", appName))
+               .issuer(JWT_ISSUER)
                .subject(authentication.getName())
                .claim(USERNAME, authentication.getName())
                .claim(AUTHORITIES, authentication.getAuthorities().stream()
@@ -61,12 +59,10 @@ public class JwtUtil {
    * Genera un Refresh Token JWT (larga duración).
    */
   public String generateRefreshToken(String username) {
-    long expirationTime = Long.parseLong(
-        env.getProperty("jwt.refresh.expiration", "604800000") // 7 días por defecto
-    );
+    long expirationTime = securityProperties.getJwt().getRefreshExpirationTime();
 
     return Jwts.builder()
-               .issuer(env.getProperty("jwt.issuer", appName))
+               .issuer(JWT_ISSUER)
                .subject(username)
                .claim(USERNAME, username)
                .claim(TYPE, "REFRESH")
@@ -85,12 +81,10 @@ public class JwtUtil {
    * - jti=UUID (para invalidación opcional vía blacklist)
    */
   public String generatePasswordResetToken(String email) {
-    long expirationTime = Long.parseLong(
-        env.getProperty("jwt.pwd_reset.expiration", "600000") // 10 minutos por defecto
-    );
+    long expirationTime = securityProperties.getJwt().getPasswordResetExpirationTime();
 
     return Jwts.builder()
-               .issuer(env.getProperty("jwt.issuer", appName))
+               .issuer(JWT_ISSUER)
                .subject(email)
                .claim(USERNAME, email)
                .claim(TYPE, "PWD_RESET")
@@ -199,7 +193,7 @@ public class JwtUtil {
   }
 
   private SecretKey getSigningKey() {
-    String secret = env.getProperty("jwt.secret.key", "default_secret_min_length_256bits");
+    String secret = securityProperties.getJwt().getSecretKey();
     return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
   }
 

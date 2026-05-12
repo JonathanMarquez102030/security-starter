@@ -185,9 +185,9 @@ public class SecurityProperties {
     private Integer refreshExpirationTime = 604800000;
     /**
      * Emisor (issuer) del token JWT. Identifica quién genera el token.
-     * Por defecto: "jmp".
+     * Por defecto: "set isser".
      */
-    private String issuer = "jmp";
+    private String issuer = "set issuer";
     /**
      * Clave secreta utilizada para firmar los tokens JWT.
      * Debe tener al menos 256 bits de longitud para HS256.
